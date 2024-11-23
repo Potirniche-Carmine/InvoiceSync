@@ -5,5 +5,4 @@ const nextConfig: NextConfig = {
     appIsrStatus: false,
   },
 };
-
 export default nextConfig;
