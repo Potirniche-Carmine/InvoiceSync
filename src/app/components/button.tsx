@@ -14,7 +14,6 @@ const Button: React.FC<ButtonProps> = ({
   onClick,
   redirectTo,
   children,
-  className = '',
 }) => {
   const router = useRouter();
 
