@@ -38,7 +38,7 @@ const DashboardPage: React.FC = async () => {
           />
           <Card
             title="Create Quote"
-            icon={<FaQuoteRight className="text-purple-500" />}
+            icon={<FaQuoteRight className="text-purple-400" />}
             redirectTo="/admin/dashboard/create-quote"
           />
           <Card
