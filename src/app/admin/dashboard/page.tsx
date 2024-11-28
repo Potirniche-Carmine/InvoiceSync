@@ -10,7 +10,6 @@ import {
   FaFileInvoice,
   FaFileAlt,
 } from 'react-icons/fa';
-import { FiLogOut } from 'react-icons/fi';
 
 const DashboardPage: React.FC = async () => {
   const session = await getServerSession(authOptions);
