@@ -1,9 +1,4 @@
-
-const addCustomerPage = () => {
-    return (
-        <h1>Add Customer Page</h1>
-    );
-  };
-  
-  export default addCustomerPage
-;
+'use client';
+export default function addCustomer() {
+  return <h1>Add a customer</h1>;
+}

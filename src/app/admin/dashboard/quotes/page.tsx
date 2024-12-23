@@ -1,8 +1,4 @@
-
-const QuotesPage = () => {
-    return (
-        <h1> Quotes Page</h1>
-    );
-  };
-  
-  export default QuotesPage;
+'use client';
+export default function AllQuotesPage() {
+  return <h1>Invoices</h1>;
+}

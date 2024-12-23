@@ -1,9 +1,0 @@
-services:
-  nextjs:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: nextjs
-    ports:
-      - "3000:3000"
-    restart: always
