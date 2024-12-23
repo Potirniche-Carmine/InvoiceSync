@@ -1,7 +1,6 @@
-// pages/admin/dashboard/index.tsx
+'use client'
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/pages/api/auth/[...nextauth]';
-import { redirect } from 'next/navigation';
+import { authOptions } from '@/app/lib/authOptions';
 import Card from '@/app/components/card';
 import {
   FaFileInvoiceDollar,
@@ -11,13 +10,8 @@ import {
   FaFileAlt,
 } from 'react-icons/fa';
 
-const DashboardPage: React.FC = async () => {
+export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
-
-  if (!session) {
-    redirect('/admin'); // Redirect to login page if not authenticated
-  }
-
   return (
     <div className="min-h-screen flex flex-col items-center bg-gray-100">
       <div className="w-full max-w-4xl mt-10">
@@ -55,5 +49,3 @@ const DashboardPage: React.FC = async () => {
     </div>
   );
 };
-
-export default DashboardPage;

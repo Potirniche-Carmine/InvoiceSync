@@ -1,8 +1,4 @@
-
-const InvoicesPage = () => {
-    return (
-        <h1>Invoices Page</h1>
-    );
-  };
-  
-  export default InvoicesPage;
+'use client';
+export default function AllInvoicesPage() {
+  return <h1>Invoices</h1>;
+}

@@ -1,8 +1,4 @@
-
-const CreateInvoicesPage = () => {
-    return (
-        <h1>Create Invoices Page</h1>
-    );
-  };
-  
-  export default CreateInvoicesPage;
+'use client';
+export default function createInvoice() {
+  return <h1>CreateInvoice</h1>;
+}
