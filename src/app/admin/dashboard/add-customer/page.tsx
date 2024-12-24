@@ -9,12 +9,10 @@ export default function AddCustomerPage() {
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErrorMsg('');
-    setIsSubmitting(true);
 
     try {
       const res = await fetch('/api/customers', {
@@ -36,7 +34,6 @@ export default function AddCustomerPage() {
       setErrorMsg('An unexpected error occurred');
       console.error(err);
     } finally {
-      setIsSubmitting(false);
     }
   }
 
