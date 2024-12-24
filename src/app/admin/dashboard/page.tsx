@@ -1,4 +1,3 @@
-'use client'
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/lib/authOptions';
 import Card from '@/app/components/card';
@@ -13,7 +12,7 @@ import {
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gray-100">
+    <div className="min-h-screen flex flex-col items-center">
       <div className="w-full max-w-4xl mt-10">
         <h1 className="text-3xl font-bold mb-6 text-center">
           Welcome to the Dashboard, {session?.user?.name}!
