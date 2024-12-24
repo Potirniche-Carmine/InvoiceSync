@@ -11,7 +11,7 @@ const Card: React.FC<CardProps> = ({ title, description, icon, redirectTo }) => 
   return (
     <a
       href={redirectTo}
-      className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow flex items-center"
+      className="bg-gray-100 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow flex items-center"
     >
       {icon && <div className="mr-4 text-3xl">{icon}</div>}
       <div>

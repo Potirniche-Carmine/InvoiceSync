@@ -20,7 +20,6 @@ export default function AdminLogin() {
     if (result?.error) {
       setError(result.error);
     } else {
-      // Redirect after successful login
       window.location.href = "/admin/dashboard";
     }
   };
