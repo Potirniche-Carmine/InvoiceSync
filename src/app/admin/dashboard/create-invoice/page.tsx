@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import CustomerSelect from '@/app/components/customer_select';
 import { Customer } from '@/app/components/customer_select';
+import Button from '@/app/components/button';
 
 
 export default function CreateInvoicePage() {
@@ -87,12 +88,11 @@ export default function CreateInvoicePage() {
           <p className="text-green-500">Invoice created successfully!</p>
         )}
 
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
+        <Button
+        type="submit"
+        className="bg-blue-600 text-white py-2 px-4 rounded disabled:opacity-50">
           Create Invoice
-        </button>
+        </Button>
       </form>
     </div>
   );
