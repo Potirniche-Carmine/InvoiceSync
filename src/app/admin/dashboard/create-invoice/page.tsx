@@ -8,8 +8,9 @@ import Button from '@/app/components/button';
 
 export default function CreateInvoicePage() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [amount, setAmount] = useState('');
+  const [PO, setPO] = useState('');
   const [description, setDescription] = useState('');
+  const [comments, setComments] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
@@ -19,7 +20,7 @@ export default function CreateInvoicePage() {
     setSuccess(false);
 
     if (!selectedCustomer) {
-      setError('Please select a customer');
+      setError('No customer selected');
       return;
     }
 
@@ -31,7 +32,7 @@ export default function CreateInvoicePage() {
         },
         body: JSON.stringify({
           customer_id: selectedCustomer.customer_id,
-          amount: parseFloat(amount),
+          PO,
           description,
         }),
       });
@@ -41,9 +42,10 @@ export default function CreateInvoicePage() {
       }
 
       setSuccess(true);
-      setAmount('');
+      setPO('');
       setDescription('');
       setSelectedCustomer(null);
+      setComments('');
     } catch (err) {
       setError('Failed to create invoice');
       console.error(err);
@@ -61,14 +63,25 @@ export default function CreateInvoicePage() {
         </div>
 
         <div>
-          <label className="block mb-1">Amount</label>
+          <label className="block mb-1">PO#</label>
           <input
-            type="number"
-            step="0.01"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            id ="po"
+            type="text"
+            value={PO}
+            onChange={(e) => setPO(e.target.value)}
             className="w-full p-2 border rounded"
-            required
+            placeholder="e.g. PO/RO#123456"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1">Private Comments</label>
+          <textarea
+            value={comments}
+            onChange={(e) => setComments(e.target.value)}
+            className="w-full p-2 border rounded"
+            rows={2}
+            placeholder="Any private comments regarding this job?"
           />
         </div>
 
@@ -78,8 +91,8 @@ export default function CreateInvoicePage() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full p-2 border rounded"
-            rows={3}
-            required
+            rows={2}
+            placeholder="Enter job description here"
           />
         </div>
 
