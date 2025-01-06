@@ -30,3 +30,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
+export async function GET() {
+  try {
+    const query = `
+      SELECT customer_id, customer_name, customer_address 
+      FROM customer 
+      ORDER BY customer_name
+    `;
+    
+    const result = await pool.query(query);
+    return NextResponse.json({ customers: result.rows });
+  } catch (err) {
+    console.error('Error fetching customers:', err);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}

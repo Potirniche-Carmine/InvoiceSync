@@ -5,7 +5,6 @@ import Button from '@/app/components/button';
 
 export default function AddCustomerPage() {
   const router = useRouter();
-
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
