@@ -1,7 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Button from '@/app/components/button';
+import { Button } from '@/app/components/ui/button';
+import {UserRoundPlus } from "lucide-react";
 
 export default function AddCustomerPage() {
   const router = useRouter();
@@ -73,9 +74,8 @@ export default function AddCustomerPage() {
           />
         </div>
         <Button
-        type="submit"
-        className="bg-blue-600 text-white py-2 px-4 rounded disabled:opacity-50">
-          Add/Update Customer
+        className="w-full">
+          <UserRoundPlus/> Add/Update Customer
         </Button>
       </form>
     </div>

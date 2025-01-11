@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import CustomerSelect from '@/app/components/customer_select';
 import { Customer } from '@/app/components/customer_select';
-import Button from '@/app/components/button';
+import { Button } from '@/app/components/ui/button';
+import { Plus, CircleX } from "lucide-react";
+import {FilePlus} from 'lucide-react';
 import ServiceSelect from '@/app/components/services_select';
 import { Service } from '@/app/components/services_select';
-
 
 export default function CreateInvoicePage() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -14,7 +15,7 @@ export default function CreateInvoicePage() {
   const [description, setDescription] = useState('');
   const [comments, setComments] = useState('');
   const [vin, setVIN] = useState('');
-  const [service, setService] = useState<(Service | null)[]>([null,null]);
+  const [service, setService] = useState<(Service | null)[]>([null]);  // Start with one service
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
@@ -31,7 +32,13 @@ export default function CreateInvoicePage() {
   };
 
   const removeServiceSelection = (index: number) => {
-    setService(prev => prev.filter((_, i) => i !== index));
+    setService(prev => {
+      // Only allow removal if there will be at least one service remaining
+      if (prev.length > 1) {
+        return prev.filter((_, i) => i !== index);
+      }
+      return prev;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,6 +61,9 @@ export default function CreateInvoicePage() {
           customer_id: selectedCustomer.customer_id,
           PO,
           description,
+          comments,
+          vin,
+          services: service.filter(s => s !== null), // Only send non-null services
         }),
       });
 
@@ -66,7 +76,7 @@ export default function CreateInvoicePage() {
       setSelectedCustomer(null);
       setComments('');
       setVIN('');
-      setService([null,null]);
+      setService([null]); // Reset to one empty service
     } catch (err) {
       setError('Failed to create invoice');
       console.error(err);
@@ -86,7 +96,7 @@ export default function CreateInvoicePage() {
         <div>
           <label className="block mb-1 font-bold">PO#</label>
           <input
-            id ="po"
+            id="po"
             type="text"
             value={PO}
             onChange={(e) => setPO(e.target.value)}
@@ -120,10 +130,10 @@ export default function CreateInvoicePage() {
         <div>
           <label className="block mb-1 font-bold">VIN#</label>
           <input
-            id ="vin"
+            id="vin"
             type="text"
             value={vin}
-            onChange={(e) => setPO(e.target.value)}
+            onChange={(e) => setVIN(e.target.value)}
             className="w-full p-2 border rounded"
             placeholder="e.g. 1HGCM82633A123456"
           />
@@ -132,28 +142,33 @@ export default function CreateInvoicePage() {
         <div>
           <div className="flex justify-between items-center mb-2">
             <label className="font-bold">Services</label>
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="icon"
               onClick={addServiceSelection}
-              className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-blue-600 focus:outline-none"
             >
-              +
-            </button>
+              <Plus size={15} />
+            </Button>
           </div>
           <div className="space-y-4">
             {service.map((serviceItem, index) => (
-              <div key={index} className="relative">
-                <ServiceSelect
-                  onSelect={(service) => handleServiceSelect(index, service)}
-                />
-                {service.length > 2 && (
-                  <button
+              <div key={index} className="flex items-start gap-2">
+                <div className="flex-1">
+                  <ServiceSelect
+                    onSelect={(service) => handleServiceSelect(index, service)}
+                  />
+                </div>
+                {service.length > 1 && (
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="icon"
                     onClick={() => removeServiceSelection(index)}
-                    className="absolute -right-6 top-0 text-red-500 hover:text-red-700"
+                    className="mt-1"
                   >
-                    ×
-                  </button>
+                    <CircleX size={15} />
+                  </Button>
                 )}
               </div>
             ))}
@@ -166,9 +181,9 @@ export default function CreateInvoicePage() {
         )}
 
         <Button
-        type="submit"
-        className="bg-blue-600 text-white py-2 px-4 rounded disabled:opacity-50">
-          Create Invoice
+          type="submit"
+          className="w-full">
+          <FilePlus/> Create Invoice
         </Button>
       </form>
     </div>

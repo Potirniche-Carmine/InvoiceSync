@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
+import { Switch } from "./ui/switch";
+import { Label } from "@/app/components/ui/label";
 
 export interface Service {
     service_id?: number;
     servicename: string;
     description: string;
     unitprice: number;
+    isTaxed: boolean;
 }
 
 interface ServiceSelectProps {
@@ -51,7 +54,8 @@ export default function ServiceSelect({ onSelect }: ServiceSelectProps) {
         const newService: Service = {
             servicename: 'search',
             description: '',
-            unitprice: 0
+            unitprice: 0,
+            isTaxed: false
         };
         setSelectedService(newService);
         setEditedService(newService);
@@ -72,6 +76,8 @@ export default function ServiceSelect({ onSelect }: ServiceSelectProps) {
                     service_id: selectedService.service_id,
                     description: editedService.description,
                     unitprice: editedService.unitprice,
+                    isTaxed: editedService.isTaxed,
+                    
                 }),
             });
             if (response.ok) {
@@ -118,7 +124,7 @@ export default function ServiceSelect({ onSelect }: ServiceSelectProps) {
                 ))}
                 {filteredServices.length === 0 && (
                   <div
-                    className="p-2 hover:bg-gray-100 cursor-pointer text-blue-600"
+                    className="p-2 hover:bg-gray-100 cursor-pointer text-black"
                     onClick={handleCreateNewService}
                   >
                     Create new service: "{search}"
@@ -143,17 +149,24 @@ export default function ServiceSelect({ onSelect }: ServiceSelectProps) {
                   }))}
                   onBlur={handleUpdateService}
                 />
-                <input
-                  type="number"
-                  className="w-full bg-white p-2 border rounded"
-                  placeholder="Unit Price"
-                  value={editedService?.unitprice || ''}
-                  onChange={(e) => setEditedService(prev => ({
-                    ...prev!,
-                    unitprice: parseFloat(e.target.value)
-                  }))}
-                  onBlur={handleUpdateService}
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-2">$</span>
+                  <input
+                    type="number"
+                    className="w-full bg-white p-2 pl-6 border rounded"
+                    placeholder="Unit Price"
+                    value={editedService?.unitprice || ''}
+                    onChange={(e) => setEditedService(prev => ({
+                      ...prev!,
+                      unitprice: parseFloat(e.target.value)
+                    }))}
+                    onBlur={handleUpdateService}
+                  />
+                </div>
+                <div className="flex justify-between p-2">
+                  <Label>Tax</Label>
+                  <Switch id ="Tax"/>
+                </div>
               </div>
             </div>
           )}
