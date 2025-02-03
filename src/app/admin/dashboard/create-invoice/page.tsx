@@ -1,17 +1,19 @@
 'use client';
 
-import { useState } from 'react';
-import CustomerSelect from '@/app/components/customer_select';
-import { Customer } from '@/app/components/customer_select';
-import { Button } from '@/app/components/ui/button';
-import { Plus, CircleX } from "lucide-react";
-import {FilePlus} from 'lucide-react';
-import ServiceSelect from '@/app/components/services_select';
-import { Service } from '@/app/components/services_select';
+import { useState } from 'react'
+import CustomerSelect from '@/app/components/customer_select'
+import { Customer } from '@/app/components/customer_select'
+import { Button } from '@/app/components/ui/button'
+import { Plus, CircleX } from "lucide-react"
+import {FilePlus} from 'lucide-react'
+import ServiceSelect from '@/app/components/services_select'
+import { Service } from '@/app/components/services_select'
+import { DatePicker } from '@/app/components/datepicker'
 
 export default function CreateInvoicePage() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [PO, setPO] = useState('');
+  const [date, setDate] = useState<Date | undefined>(undefined);
   const [description, setDescription] = useState('');
   const [comments, setComments] = useState('');
   const [vin, setVIN] = useState('');
@@ -63,6 +65,7 @@ export default function CreateInvoicePage() {
           description,
           comments,
           vin,
+          date: date?.toISOString(),
           services: service.filter(s => s !== null), // Only send non-null services
         }),
       });
@@ -103,6 +106,13 @@ export default function CreateInvoicePage() {
             className="w-full p-2 border rounded"
             placeholder="e.g. PO/RO#123456"
           />
+        </div>
+
+        <div>
+          <label className="block mb-1 font-bold">Date</label>
+          <DatePicker 
+            date = {date}
+            setDate = {setDate}/>
         </div>
 
         <div>
