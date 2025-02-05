@@ -13,7 +13,7 @@ interface CustomerSelectProps {
 export default function CustomerSelect({ onSelect }: CustomerSelectProps) {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [search, setSearch] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
   const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
