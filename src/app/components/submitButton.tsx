@@ -9,7 +9,7 @@ interface ButtonProps {
   className?: string;
 }
 
-const Button: React.FC<ButtonProps> = ({
+const submitButton: React.FC<ButtonProps> = ({
   type = 'button',
   onClick,
   redirectTo,
@@ -37,4 +37,4 @@ const Button: React.FC<ButtonProps> = ({
   );
 };
 
-export default Button;
+export default submitButton;
