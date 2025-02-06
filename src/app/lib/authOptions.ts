@@ -22,47 +22,33 @@ export const authOptions: AuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        console.log('Auth attempt starting');
-        if (!credentials) {
-          console.error('No credentials provided');
-          throw new Error("No credentials");
-        }
-        const { username, password } = credentials;
-
-        console.log('Checking username match');
-        console.log('Provided username:', username);
-        console.log('Expected username:', process.env.ADMIN_USERNAME);
-
-        if (username !== process.env.ADMIN_USERNAME) {
-          console.error('Username mismatch');
-          throw new Error("Invalid username");
-        }
-
-        const encodedHash = process.env.ADMIN_PASSWORD_HASH;
-        if (!encodedHash) {
-          throw new Error('Password hash not found in environment variables');
-      }
-        const decodedHash = Buffer.from(encodedHash, 'base64').toString();
-
-        console.log('Password hash from env:', decodedHash);
-        console.log('Provided password length:', password.length);
-        console.log('Comparing passwords');
         try {
-          const isValid = await bcrypt.compare(credentials.password, decodedHash);
-          console.log('Password validation result:', isValid);
-          if (!isValid) {
-            throw new Error("Invalid password");
+          if (!credentials?.username || !credentials?.password) {
+            throw new Error("Invalid username/password. Please try again");
           }
+
+          const encodedHash = process.env.ADMIN_PASSWORD_HASH;
+          if (!encodedHash || credentials.username !== process.env.ADMIN_USERNAME) {
+            throw new Error("Invalid username/password. Please try again");
+          }
+
+          const decodedHash = Buffer.from(encodedHash, 'base64').toString();
+          const isValid = await bcrypt.compare(credentials.password, decodedHash);
+
+          if (!isValid) {
+            throw new Error("Invalid username/password. Please try again");
+          }
+
+          return {
+            id: "1",
+            name: "Iulian"
+          };
         } catch (error) {
-          console.error('Error during password comparison:', error);
-          if (error instanceof Error) {
-            console.error('Error name:', error.name);
-            console.error('Error message:', error.message);
+          if (error instanceof Error && !error.message.includes("Invalid username/password")) {
+            throw new Error("Invalid username/password. Please try again");
           }
           throw error;
         }
-
-        return { id: "1", name: "Iulian" };
       },
     }),
   ],
