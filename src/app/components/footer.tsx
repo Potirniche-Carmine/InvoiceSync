@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 
-const Footer = () => {
+export function Footer() {
   return (
     <footer className="w-full p-4 flex justify-center bg-backgroundSlight">
       <Link href='/policy' className= "flex-1 flex justify-center">
@@ -14,4 +14,3 @@ const Footer = () => {
   );
 };
 
-export default Footer;
