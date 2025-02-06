@@ -22,27 +22,40 @@ export const authOptions: AuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        console.log('Auth attempt starting');
         if (!credentials) {
+          console.error('No credentials provided');
           throw new Error("No credentials");
         }
 
         const { username, password } = credentials;
 
+        console.log('Checking username match');
+        console.log('Provided username:', username);
+        console.log('Expected username:', process.env.ADMIN_USERNAME);
+
         if (username !== process.env.ADMIN_USERNAME) {
+          console.error('Username mismatch');
           throw new Error("Invalid username");
         }
 
         const passwordHash = process.env.ADMIN_PASSWORD_HASH;
         if (!passwordHash) {
+          console.error('Password hash not found in env');
           throw new Error("Password hash is not defined");
         }
 
-        const isValid = await bcrypt.compare(password, passwordHash);
-        if (!isValid) {
-          throw new Error("Invalid password");
+        console.log('Comparing passwords');
+        try {
+          const isValid = await bcrypt.compare(password, passwordHash);
+          console.log('Password validation result:', isValid);
+          if (!isValid) {
+            throw new Error("Invalid password");
+          }
+        } catch (error) {
+          console.error('Error during password comparison:', error);
+          throw error;
         }
-
-        // Return user object on successful authentication
         return { id: "1", name: "Iulian" };
       },
     }),
