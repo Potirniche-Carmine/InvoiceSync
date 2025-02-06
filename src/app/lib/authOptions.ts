@@ -1,4 +1,4 @@
-import { AuthOptions} from "next-auth";
+import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 
@@ -28,30 +28,27 @@ export const authOptions: AuthOptions = {
           throw new Error("No credentials");
         }
         const { username, password } = credentials;
-        
+
         console.log('Checking username match');
         console.log('Provided username:', username);
         console.log('Expected username:', process.env.ADMIN_USERNAME);
-        
+
         if (username !== process.env.ADMIN_USERNAME) {
           console.error('Username mismatch');
           throw new Error("Invalid username");
         }
-      
-        const passwordHash = process.env.ADMIN_PASSWORD_HASH;
-        console.log('Password hash from env:', passwordHash);
+
+        const encodedHash = process.env.ADMIN_PASSWORD_HASH;
+        if (!encodedHash) {
+          throw new Error('Password hash not found in environment variables');
+      }
+        const decodedHash = Buffer.from(encodedHash, 'base64').toString();
+
+        console.log('Password hash from env:', decodedHash);
         console.log('Provided password length:', password.length);
-        if (!passwordHash) {
-          console.error('Password hash not found in env');
-          throw new Error("Password hash is not defined");
-        }
-      
         console.log('Comparing passwords');
         try {
-          if (!passwordHash.startsWith('$2a$')) {
-            console.log('Warning: Hash does not start with expected bcrypt prefix');
-          }
-          const isValid = await bcrypt.compare(password, passwordHash);
+          const isValid = await bcrypt.compare(credentials.password, decodedHash);
           console.log('Password validation result:', isValid);
           if (!isValid) {
             throw new Error("Invalid password");
@@ -64,19 +61,19 @@ export const authOptions: AuthOptions = {
           }
           throw error;
         }
-      
+
         return { id: "1", name: "Iulian" };
       },
     }),
   ],
   callbacks: {
-    async jwt({token, user}) {
+    async jwt({ token, user }) {
       if (user) {
         token.loginTimeStamp = Date.now();
       }
       return token;
     },
-    async session({session, token}) {
+    async session({ session, token }) {
       session.loginTimeStamp = token.loginTimeStamp as number;
       return session;
     },
