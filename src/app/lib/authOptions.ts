@@ -48,7 +48,7 @@ export const authOptions: AuthOptions = {
       
         console.log('Comparing passwords');
         try {
-          if (!passwordHash.startsWith('$2b$')) {
+          if (!passwordHash.startsWith('$2a$')) {
             console.log('Warning: Hash does not start with expected bcrypt prefix');
           }
           const isValid = await bcrypt.compare(password, passwordHash);
