@@ -39,6 +39,8 @@ export const authOptions: AuthOptions = {
         }
       
         const passwordHash = process.env.ADMIN_PASSWORD_HASH;
+        console.log('Password hash from env:', passwordHash);
+        console.log('Provided password length:', password.length);
         if (!passwordHash) {
           console.error('Password hash not found in env');
           throw new Error("Password hash is not defined");
@@ -46,6 +48,9 @@ export const authOptions: AuthOptions = {
       
         console.log('Comparing passwords');
         try {
+          if (!passwordHash.startsWith('$2b$')) {
+            console.log('Warning: Hash does not start with expected bcrypt prefix');
+          }
           const isValid = await bcrypt.compare(password, passwordHash);
           console.log('Password validation result:', isValid);
           if (!isValid) {
@@ -53,6 +58,10 @@ export const authOptions: AuthOptions = {
           }
         } catch (error) {
           console.error('Error during password comparison:', error);
+          if (error instanceof Error) {
+            console.error('Error name:', error.name);
+            console.error('Error message:', error.message);
+          }
           throw error;
         }
       

@@ -1,9 +1,16 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  devIndicators: {
-    appIsrStatus: false,
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: "standalone",
+  // Add these configurations
+  images: {
+    unoptimized: true
   },
-  output: "standalone"
+  experimental: {
+    outputFileTracingIncludes: {
+      '/app/fonts/**/*': true,  // For your local fonts
+      '/public/**/*': true      // For public assets
+    }
+  }
 };
+
 export default nextConfig;
