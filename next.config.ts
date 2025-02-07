@@ -1,9 +1,4 @@
-import type { NextConfig } from "next";
+/** @type {import('next').NextConfig} */
+const nextConfig = {};
 
-const nextConfig: NextConfig = {
-  devIndicators: {
-    appIsrStatus: false,
-  },
-  output: "standalone"
-};
 export default nextConfig;
