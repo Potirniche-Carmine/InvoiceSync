@@ -33,10 +33,9 @@ export default function AdminLogin() {
     const formData = new FormData(formRef.current);
     const username = formData.get("username") as string;
     const password = formData.get("password") as string;
-    const token = formData.get("cf-turnstile-response") as string;
+    const token = turnstileRef.current;
 
     try {
-      // First validate the Turnstile token
       const validationResponse = await fetch("/api/auth/validate-turnstile", {
         method: "POST",
         headers: {
@@ -51,7 +50,6 @@ export default function AdminLogin() {
         return;
       }
 
-      // If Turnstile validation passes, proceed with NextAuth signin
       const result = await signIn("credentials", {
         username,
         password,
