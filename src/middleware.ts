@@ -41,5 +41,6 @@ export const config = {
     "/admin/dashboard",
     "/admin/dashboard/:path*",
     "/api/:path*",
+    "!/api/auth/:path*",
   ],
 };

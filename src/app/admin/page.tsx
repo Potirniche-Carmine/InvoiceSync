@@ -18,27 +18,23 @@ export default function AdminLogin() {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
-  
+
     if (!formRef.current) {
       setIsLoading(false);
       return;
     }
-  
+
     if (turnstileStatus !== "success") {
       setError("Please verify you are not a robot");
       setIsLoading(false);
       return;
     }
-  
+
     const formData = new FormData(formRef.current);
     const username = formData.get("username") as string;
     const password = formData.get("password") as string;
-    
-    // Use turnstileRef.current instead of formData
     const token = turnstileRef.current;
-    
-    console.log('Turnstile token:', token); // Add this log
-  
+
     try {
       // First validate the Turnstile token
       const validationResponse = await fetch("/api/auth/validate-turnstile", {
@@ -46,18 +42,16 @@ export default function AdminLogin() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ token }), // Make sure token is being sent
+        body: JSON.stringify({ token }),
       });
-  
-      const validationData = await validationResponse.json(); // Add this line
-      console.log('Validation response:', validationData); // Add this log
-  
+
       if (!validationResponse.ok) {
         setError("Security check failed. Please try again.");
         setIsLoading(false);
         return;
       }
 
+      // If Turnstile validation passes, proceed with NextAuth signin
       const result = await signIn("credentials", {
         username,
         password,
