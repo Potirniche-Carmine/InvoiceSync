@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export function Header(){
   return (
-    <header className="p-6 bg-backgroundSlight">
+    <header className="p-6 border-b border-gray-300">
       <div className="flex-1 flex items-start">
         <Link href="/admin/dashboard" className="flex items-center">
           <Image
