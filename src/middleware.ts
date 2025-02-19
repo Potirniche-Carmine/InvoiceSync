@@ -6,8 +6,20 @@ const secret = process.env.NEXTAUTH_SECRET;
 
 export default async function middleware(req: NextRequest){
   const token = await getToken({req, secret});
+  const isApiRoute = req.nextUrl.pathname.startsWith('/api/');
 
   if (!token) {
+    if (isApiRoute) {
+      return new NextResponse(
+        JSON.stringify({ error: 'Authentication required' }),
+        {
+          status: 401,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    }
     return NextResponse.redirect(new URL("/admin", req.nextUrl));
   }
 
@@ -28,5 +40,6 @@ export const config = {
   matcher: [
     "/admin/dashboard",
     "/admin/dashboard/:path*",
+    "/api/:path*",
   ],
 };
