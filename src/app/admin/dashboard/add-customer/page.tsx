@@ -15,7 +15,7 @@ export default function AddCustomerPage() {
     setErrorMsg('');
 
     try {
-      const res = await fetch('/api/customers', {
+      const res = await fetch('/api/data/customers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

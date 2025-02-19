@@ -36,7 +36,6 @@ export default function AdminLogin() {
     const token = turnstileRef.current;
 
     try {
-      // First validate the Turnstile token
       const validationResponse = await fetch("/api/auth/validate-turnstile", {
         method: "POST",
         headers: {
@@ -51,7 +50,6 @@ export default function AdminLogin() {
         return;
       }
 
-      // If Turnstile validation passes, proceed with NextAuth signin
       const result = await signIn("credentials", {
         username,
         password,
