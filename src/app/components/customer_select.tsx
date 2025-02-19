@@ -19,7 +19,7 @@ export default function CustomerSelect({ onSelect }: CustomerSelectProps) {
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
-        const response = await fetch('/api/customers');
+        const response = await fetch('/api/data/customers');
         const data = await response.json();
         setCustomers(data.customers);
       } catch (error) {

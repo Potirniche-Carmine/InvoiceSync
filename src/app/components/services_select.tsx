@@ -25,9 +25,9 @@ export default function ServiceSelect({ onSelect }: ServiceSelectProps) {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await fetch('/api/services');
+        const response = await fetch('/api/data/services');
         const data = await response.json();
-        setServices(data.services); // No need to transform istaxed
+        setServices(data.services);
       } catch (error) {
         console.error('Error fetching services:', error);
       } finally {
@@ -48,7 +48,7 @@ export default function ServiceSelect({ onSelect }: ServiceSelectProps) {
 
   const handleCreateNewService = async () => {
     try {
-      const response = await fetch('/api/services', {
+      const response = await fetch('/api/data/services', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -85,7 +85,7 @@ export default function ServiceSelect({ onSelect }: ServiceSelectProps) {
     if (!serviceToUpdate || !selectedService?.service_id) return;
   
     try {
-      const response = await fetch('/api/services', {
+      const response = await fetch('/api/data/services', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

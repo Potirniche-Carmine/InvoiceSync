@@ -2,12 +2,12 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/lib/authOptions';
 import Card from '@/app/components/card';
 import {
-  FaFileInvoiceDollar,
-  FaQuoteRight,
-  FaUserPlus,
-  FaFileInvoice,
-  FaFileAlt,
-} from 'react-icons/fa';
+  FilePlus,
+  BookOpen,
+  FilePlus2,
+  UserRoundPlus,
+
+} from "lucide-react";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -20,27 +20,27 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card
             title="Create Invoice"
-            icon={<FaFileInvoiceDollar className="text-red" />}
+            icon={<FilePlus color="#004aff"/>}
             redirectTo="/admin/dashboard/create-invoice"
           />
           <Card
             title="View Invoices"
-            icon={<FaFileInvoice className="text-green-500" />}
+            icon={<BookOpen color="#edff00"/>}
             redirectTo="/admin/dashboard/invoices"
           />
           <Card
             title="Create Quote"
-            icon={<FaQuoteRight className="text-purple-400" />}
+            icon={<FilePlus2 color="#ff0000"/>}
             redirectTo="/admin/dashboard/create-quote"
           />
           <Card
             title="View Quotes"
-            icon={<FaFileAlt className="text-yellow" />}
+            icon={<BookOpen color="#ff8a00"/>}
             redirectTo="/admin/dashboard/quotes"
           />
           <Card
             title="Add New Customer"
-            icon={<FaUserPlus className="text-blue" />}
+            icon={<UserRoundPlus color="#00ff11 "/>}
             redirectTo="/admin/dashboard/add-customer"
           />
         </div>

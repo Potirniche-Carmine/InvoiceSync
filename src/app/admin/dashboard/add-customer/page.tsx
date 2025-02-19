@@ -15,7 +15,7 @@ export default function AddCustomerPage() {
     setErrorMsg('');
 
     try {
-      const res = await fetch('/api/customers', {
+      const res = await fetch('/api/data/customers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -27,7 +27,6 @@ export default function AddCustomerPage() {
         const errorData = await res.json();
         setErrorMsg(errorData.error || 'Something went wrong');
       } else {
-        // If successful, you can redirect or push user to another page:
         router.push('/admin/dashboard'); 
       }
     } catch (err) {

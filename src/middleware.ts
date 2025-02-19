@@ -40,6 +40,6 @@ export const config = {
   matcher: [
     "/admin/dashboard",
     "/admin/dashboard/:path*",
-    "/api/:path*",
+    "/api/data/:path*",
   ],
 };

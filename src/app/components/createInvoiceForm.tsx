@@ -68,7 +68,7 @@ export default function CreateInvoiceForm() {
     }
 
     try {
-      const response = await fetch('/api/invoices', {
+      const response = await fetch('/api/data/invoices', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
