@@ -120,3 +120,26 @@ export async function POST(request: Request) {
     client.release();
   }
 }
+
+export async function GET() {
+  try {
+    const query = `
+      SELECT 
+        i.invoice_id,
+        c.customer_name,
+        i.date,
+        i.duedate,
+        i.totalamount,
+        i.status
+      FROM invoices i
+      JOIN customer c ON i.customer_id = c.customer_id
+      ORDER BY i.date DESC
+    `;
+
+    const result = await pool.query(query);
+    return NextResponse.json({ invoices: result.rows });
+  } catch (err) {
+    console.error('Error fetching invoices:', err);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
