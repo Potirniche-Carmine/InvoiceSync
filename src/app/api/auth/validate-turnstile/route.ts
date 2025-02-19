@@ -22,15 +22,19 @@ export async function POST(req: NextRequest) {
 
     if (!validationResponse.success) {
       return NextResponse.json(
-        { error: "Invalid Turnstile token" },
+        { error: "Security check failed" },
         { status: 400 }
       );
     }
+    return NextResponse.json({ 
+      success: true,
+      message: "Turnstile validation successful" 
+    });
 
-    return NextResponse.json({ success: true });
-  } catch {
+  } catch (error) {
+    console.error("Turnstile validation error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "An error occurred during security check" },
       { status: 500 }
     );
   }
