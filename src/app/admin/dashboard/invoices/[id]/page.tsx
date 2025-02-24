@@ -46,9 +46,7 @@ export default async function InvoicePage({
 }: {
   params: { id: string };
 }) {
-  const { id } = await params;
-  
-  const invoice = await getInvoice(id);
+  const invoice = await getInvoice(params.id);
   
   if (!invoice) {
     notFound();
