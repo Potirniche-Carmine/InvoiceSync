@@ -41,11 +41,10 @@ async function getInvoice(id: string): Promise<DetailedInvoice | null> {
   }
 }
 
-export default async function InvoicePage({
-  params,
-}: {
+export default async function InvoicePage(props: {
   params: { id: string };
 }) {
+  const { params } = props;
   const invoice = await getInvoice(params.id);
   
   if (!invoice) {
