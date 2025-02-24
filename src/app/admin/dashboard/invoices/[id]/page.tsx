@@ -41,11 +41,17 @@ async function getInvoice(id: string): Promise<DetailedInvoice | null> {
   }
 }
 
+
+type Props = {
+  params: {
+    id: string;
+  };
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+
 export default async function InvoicePage({
   params,
-}: {
-  params: { id: string };
-}) {
+}: Props) {
   const invoice = await getInvoice(params.id);
   
   if (!invoice) {
