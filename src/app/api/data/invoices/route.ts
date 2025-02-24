@@ -32,7 +32,6 @@ export async function POST(request: Request) {
     
     const total_amount = subtotal + tax_total;
 
-    // Create the invoice
     const invoiceQuery = {
       text: `
         INSERT INTO invoices (
@@ -68,7 +67,6 @@ export async function POST(request: Request) {
     const invoiceResult = await client.query(invoiceQuery);
     const invoice_id = invoiceResult.rows[0].invoice_id;
 
-    // Create invoice details for each service
     for (const service of services) {
       console.log('Processing service:', service);
       
@@ -97,8 +95,6 @@ export async function POST(request: Request) {
 
       await client.query(detailQuery);
     }
-
-    // Commit the transaction
     await client.query('COMMIT');
 
     return NextResponse.json({ 
@@ -108,7 +104,6 @@ export async function POST(request: Request) {
     });
 
   } catch (error) {
-    // Rollback in case of error
     await client.query('ROLLBACK');
     
     console.error('Error creating invoice:', error);
@@ -118,5 +113,46 @@ export async function POST(request: Request) {
     );
   } finally {
     client.release();
+  }
+}
+
+export async function GET() {
+  try {
+    const query = `
+      SELECT 
+        i.invoice_id,
+        c.customer_name,
+        i.date,
+        i.duedate,
+        i.totalamount,
+        i.vin,
+        i.po_number,
+        i.status,
+        i.description,
+        i.subtotal,
+        i.tax_total,
+        i.private_comments
+      FROM invoices i
+      JOIN customer c ON i.customer_id = c.customer_id
+      ORDER BY i.date DESC
+    `;
+    
+    const result = await pool.query(query);
+    
+    return NextResponse.json({ 
+      invoices: result.rows 
+    }, {
+      headers: {
+
+        'Cache-Control': 's-maxage=60, stale-while-revalidate'
+      }
+    });
+    
+  } catch (err) {
+    console.error('Error fetching invoices:', err);
+    return NextResponse.json(
+      { error: 'Internal Server Error' }, 
+      { status: 500 }
+    );
   }
 }
