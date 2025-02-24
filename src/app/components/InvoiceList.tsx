@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import useSWR from 'swr';
 import {
   Table,
@@ -27,14 +27,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
-import { CircleDollarSign, Printer, Download } from 'lucide-react';
+import { CircleDollarSign, Printer, Download} from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 import type { Invoice } from '@/app/lib/types';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function InvoiceList() {
-  const router = useRouter();
   const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
   const [filters, setFilters] = useState({
     invoiceNumber: '',
@@ -48,12 +47,12 @@ export default function InvoiceList() {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
     dedupingInterval: 60000,
-    refreshInterval: 300000, 
+    refreshInterval: 300000,
   });
 
   useEffect(() => {
     if (!data?.invoices) return;
-    
+
     const filtered = data.invoices.filter((invoice: Invoice) => {
       const matchesInvoiceNumber = String(invoice.invoice_id)
         .toLowerCase()
@@ -93,12 +92,10 @@ export default function InvoiceList() {
 
   const handlePrintInvoice = (invoiceId: string) => {
     console.log(`Printing invoice ${invoiceId}`);
-    // Add printing logic here
   };
 
   const handleDownloadInvoice = (invoiceId: string) => {
     console.log(`Downloading invoice ${invoiceId}`);
-    // Add download logic here
   };
 
   if (error) {
@@ -187,12 +184,12 @@ export default function InvoiceList() {
               {filteredInvoices.map((invoice) => (
                 <TableRow key={invoice.invoice_id}>
                   <TableCell className="font-medium p-0">
-                    <button
-                      onClick={() => router.push(`/admin/dashboard/invoices/${invoice.invoice_id}`)}
-                      className="w-full text-left px-6 py-4 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                    <Link
+                      href={`/admin/dashboard/invoices/${invoice.invoice_id}`}
+                      className="block w-full text-left px-6 py-4 hover:text-blue-600 hover:bg-blue-50 transition-colors"
                     >
                       {invoice.invoice_id}
-                    </button>
+                    </Link>
                   </TableCell>
                   <TableCell>{invoice.customer_name}</TableCell>
                   <TableCell>

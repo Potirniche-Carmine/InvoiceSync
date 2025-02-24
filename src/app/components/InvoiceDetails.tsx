@@ -39,9 +39,13 @@ export default function InvoiceDetails({ invoice }: InvoiceDetailsProps) {
     }
   };
 
+  const formatCurrency = (value: number | string | undefined) => {
+    const num = Number(value) || 0;
+    return `$${num.toFixed(2)}`;
+  };
+
   return (
-    <div className="container max-w-5xl py-8 space-y-8">
-      {/* Header Section */}
+    <div className="px-6 container max-w-5xl py-8 space-y-8">
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold tracking-tight mb-1">
@@ -60,12 +64,13 @@ export default function InvoiceDetails({ invoice }: InvoiceDetailsProps) {
             <Download className="h-4 w-4 mr-2" />
             Download PDF
           </Button>
+          <Button variant="default" size="sm">
+            Edit Invoice
+          </Button>
         </div>
       </div>
 
-      {/* Invoice Details Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Customer Information */}
         <Card>
           <CardHeader>
             <CardTitle>Customer Information</CardTitle>
@@ -76,18 +81,12 @@ export default function InvoiceDetails({ invoice }: InvoiceDetailsProps) {
               <p className="text-lg font-semibold">{invoice.customer_name}</p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Contact Details</h3>
-              <p>{invoice.customer_email}</p>
-              <p>{invoice.customer_phone}</p>
-            </div>
-            <div>
               <h3 className="text-sm font-medium text-muted-foreground">Address</h3>
               <p className="whitespace-pre-line">{invoice.customer_address}</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Invoice Details */}
         <Card>
           <CardHeader>
             <CardTitle>Invoice Details</CardTitle>
@@ -111,15 +110,21 @@ export default function InvoiceDetails({ invoice }: InvoiceDetailsProps) {
                 <p>{invoice.vin || 'N/A'}</p>
               </div>
             </div>
-            {invoice.description && (
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Description</h3>
-                <p>{invoice.description}</p>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Description Card */}
+      {invoice.description && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Comments</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="whitespace-pre-line">{invoice.description}</p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Services Table */}
       <Card>
@@ -138,16 +143,16 @@ export default function InvoiceDetails({ invoice }: InvoiceDetailsProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {invoice.services.map((service) => (
+              {invoice.services && invoice.services.map((service) => (
                 <TableRow key={service.service_id}>
                   <TableCell className="font-medium">{service.name}</TableCell>
                   <TableCell>{service.description}</TableCell>
                   <TableCell className="text-right">{service.quantity}</TableCell>
                   <TableCell className="text-right">
-                    ${service.unitprice.toFixed(2)}
+                    {formatCurrency(service.unitprice)}
                   </TableCell>
                   <TableCell className="text-right">
-                    ${service.totalprice.toFixed(2)}
+                    {formatCurrency(service.totalprice)}
                   </TableCell>
                 </TableRow>
               ))}
@@ -158,7 +163,7 @@ export default function InvoiceDetails({ invoice }: InvoiceDetailsProps) {
                   Subtotal
                 </TableCell>
                 <TableCell className="text-right">
-                  ${invoice.subtotal.toFixed(2)}
+                  {formatCurrency(invoice.subtotal)}
                 </TableCell>
               </TableRow>
               <TableRow>
@@ -166,7 +171,7 @@ export default function InvoiceDetails({ invoice }: InvoiceDetailsProps) {
                   Tax
                 </TableCell>
                 <TableCell className="text-right">
-                  ${invoice.tax_total.toFixed(2)}
+                  {formatCurrency(invoice.tax_total)}
                 </TableCell>
               </TableRow>
               <TableRow>
@@ -174,7 +179,7 @@ export default function InvoiceDetails({ invoice }: InvoiceDetailsProps) {
                   Total
                 </TableCell>
                 <TableCell className="text-right font-bold">
-                  ${invoice.totalamount.toFixed(2)}
+                  {formatCurrency(invoice.totalamount)}
                 </TableCell>
               </TableRow>
             </TableFooter>
@@ -182,7 +187,6 @@ export default function InvoiceDetails({ invoice }: InvoiceDetailsProps) {
         </CardContent>
       </Card>
 
-      {/* Private Comments */}
       {invoice.private_comments && (
         <Card>
           <CardHeader>

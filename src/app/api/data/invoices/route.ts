@@ -143,7 +143,7 @@ export async function GET() {
       invoices: result.rows 
     }, {
       headers: {
-        // Cache for 1 minute on client side
+
         'Cache-Control': 's-maxage=60, stale-while-revalidate'
       }
     });
