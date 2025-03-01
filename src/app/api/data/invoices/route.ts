@@ -26,8 +26,8 @@ export async function POST(request: Request) {
       acc + (Number(service.unitprice) || 0), 0
     );
   
-    const tax_total = services.reduce((acc: number, service: { unitprice: number, isTaxed: boolean }) =>
-      acc + (service.isTaxed ? (Number(service.unitprice) * TAX_RATE) : 0), 0
+    const tax_total = services.reduce((acc: number, service: { unitprice: number, istaxed: boolean }) =>
+      acc + (service.istaxed ? (Number(service.unitprice) * TAX_RATE) : 0), 0
     );
     
     const total_amount = subtotal + tax_total;

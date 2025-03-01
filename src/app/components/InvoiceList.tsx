@@ -108,7 +108,7 @@ export default function InvoiceList() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
         <Input
           placeholder="Search Invoice #"
           value={filters.invoiceNumber}

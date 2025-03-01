@@ -8,11 +8,11 @@ import Link from 'next/link';
 
 export default function InvoicesPage() {
   return (
-    <div className="container py-6 space-y-6">
+    <div className="container py-6 px-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="px-6 text-3xl font-bold tracking-tight">Invoices</h1>
-          <p className="px-6 text-muted-foreground">
+          <h1 className="text-3xl font-bold tracking-tight">Invoices</h1>
+          <p className="text-muted-foreground">
             Manage and track your invoices
           </p>
         </div>
