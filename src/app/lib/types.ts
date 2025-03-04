@@ -23,8 +23,6 @@ export interface Invoice {
   }
   
   export interface DetailedInvoice extends Invoice {
-    customer_email: string;
-    customer_phone: string;
     customer_address: string;
     services: Service[];
   }
