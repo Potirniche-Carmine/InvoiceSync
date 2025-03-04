@@ -42,12 +42,11 @@ async function getInvoice(id: string): Promise<DetailedInvoice | null> {
 }
 
 export default async function InvoicePage({
-  params
-}: Readonly<{
+  params,
+}: {
   params: { id: string };
-}>) {
-  const awaitedParams = await params;
-  const id = awaitedParams.id;
+}) {
+  const { id } = await params; // Await the params before using its properties
   
   const invoice = await getInvoice(id);
   
