@@ -41,11 +41,15 @@ async function getInvoice(id: string): Promise<DetailedInvoice | null> {
   }
 }
 
-export default async function InvoicePage(props: {
+export default async function InvoicePage({
+  params
+}: Readonly<{
   params: { id: string };
-}) {
-  const { params } = props;
-  const invoice = await getInvoice(params.id);
+}>) {
+  const awaitedParams = await params;
+  const id = awaitedParams.id;
+  
+  const invoice = await getInvoice(id);
   
   if (!invoice) {
     notFound();
