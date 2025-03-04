@@ -1,17 +1,11 @@
 import { useState, useEffect } from "react";
 import { Switch } from "./ui/switch";
 import { Label } from "@/app/components/ui/label";
-
-export interface Service {
-  service_id?: number;
-  servicename: string;
-  description: string;
-  unitprice: number;
-  istaxed: boolean;
-}
+import { Service } from "@/app/lib/types";
 
 interface ServiceSelectProps {
   onSelect: (service: Service) => void;
+  initialService?: Service;
 }
 
 export default function ServiceSelect({ onSelect }: ServiceSelectProps) {

@@ -1,3 +1,9 @@
+export interface Customer {
+  customer_id: number;
+  customer_name: string;
+  customer_address: string | null;
+}
+
 export interface Invoice {
     invoice_id: string;
     customer_name: string;
@@ -14,15 +20,25 @@ export interface Invoice {
   }
   
   export interface Service {
-    service_id: string;
-    name: string;
+    service_id?: number;
+    servicename: string;
     description: string;
-    quantity: number;
     unitprice: number;
+    istaxed: boolean;
+  }
+
+  export interface InvoiceServiceDetail {
+    service_id: string;
+    servicename: string;  // From services table
+    description: string;  // From services table
+    quantity: number;     // From invoicedetail table
+    unitprice: number;    
     totalprice: number;
+    istaxed: boolean;   
   }
   
   export interface DetailedInvoice extends Invoice {
+    customer_id: number;
     customer_address: string;
-    services: Service[];
+    services: InvoiceServiceDetail[];
   }

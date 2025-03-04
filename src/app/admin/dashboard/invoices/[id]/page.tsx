@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import InvoiceDetails from '@/app/components/InvoiceDetails';
 import type { DetailedInvoice } from '@/app/lib/types';
 import { pool } from '@/app/lib/db';
+//import EditInvoiceForm from '@/app/components/EditInvoiceForm';
 
 async function getInvoice(id: string): Promise<DetailedInvoice | null> {
   try {
@@ -55,5 +56,6 @@ export default async function InvoicePage({ params }: PageProps) {
     notFound();
   }
 
-  return <InvoiceDetails invoice={invoice} />;
+  //return <EditInvoiceForm invoice={invoice} />;
+   return <InvoiceDetails invoice={invoice} />;
 }

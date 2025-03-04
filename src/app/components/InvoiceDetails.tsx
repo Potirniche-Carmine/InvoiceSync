@@ -145,7 +145,7 @@ export default function InvoiceDetails({ invoice }: InvoiceDetailsProps) {
             <TableBody>
               {invoice.services && invoice.services.map((service) => (
                 <TableRow key={service.service_id}>
-                  <TableCell className="font-medium">{service.name}</TableCell>
+                  <TableCell className="font-medium">{service.servicename}</TableCell>
                   <TableCell>{service.description}</TableCell>
                   <TableCell className="text-right">{service.quantity}</TableCell>
                   <TableCell className="text-right">

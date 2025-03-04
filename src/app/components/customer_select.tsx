@@ -1,14 +1,10 @@
 import { useState, useEffect } from 'react';
+import {Customer} from '@/app/lib/types';
 
-export interface Customer {
-    customer_id: number;
-    customer_name: string;
-    customer_address: string | null;
+  export interface CustomerSelectProps {
+    onSelect: (customer: Customer | null) => void;
+    initialCustomer?: Customer;
   }
-
-interface CustomerSelectProps {
-    onSelect: (customer: Customer) => void;
-    }
 
 export default function CustomerSelect({ onSelect }: CustomerSelectProps) {
   const [customers, setCustomers] = useState<Customer[]>([]);
