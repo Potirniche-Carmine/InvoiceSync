@@ -41,12 +41,13 @@ async function getInvoice(id: string): Promise<DetailedInvoice | null> {
   }
 }
 
-export default async function InvoicePage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const { id } = await params; // Await the params before using its properties
+type PageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function InvoicePage({ params }: PageProps) {
+  const awaitedParams = await params;
+  const id = awaitedParams.id;
   
   const invoice = await getInvoice(id);
   
