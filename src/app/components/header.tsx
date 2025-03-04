@@ -12,8 +12,9 @@ export function Header(){
             src="/logo.png"
             alt="Locksmith4U Logo"
             width={150}
-            height={40}
+            height={50}
             priority
+            style = {{height: 'auto', width: 'auto'}}
             className="mr-3"
           />
         </Link>

@@ -1,8 +1,50 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/app/lib/db';
-
+import type {Service} from '@/app/lib/types';
+ 
 const TAX_RATE = 0.0875;
 
+// GET all invoices - properly named and exported
+export async function GET() {
+  try {
+    const query = `
+      SELECT 
+        i.invoice_id,
+        c.customer_name,
+        i.date,
+        i.duedate,
+        i.totalamount,
+        i.vin,
+        i.po_number,
+        i.status,
+        i.description,
+        i.subtotal,
+        i.tax_total,
+        i.private_comments
+      FROM invoices i
+      JOIN customer c ON i.customer_id = c.customer_id
+      ORDER BY i.date DESC
+    `;
+    
+    const result = await pool.query(query);
+    
+    return NextResponse.json({ 
+      invoices: result.rows 
+    }, {
+      headers: {
+        'Cache-Control': 's-maxage=60, stale-while-revalidate'
+      }
+    });
+  } catch (err) {
+    console.error('Error fetching invoices:', err);
+    return NextResponse.json(
+      { error: 'Internal Server Error' }, 
+      { status: 500 }
+    );
+  }
+}
+
+// POST new invoice
 export async function POST(request: Request) {
   const client = await pool.connect();
   
@@ -20,15 +62,19 @@ export async function POST(request: Request) {
       services,
     } = await request.json();
 
-    console.log('Services received:', services);
-
-    const subtotal = services.reduce((acc: number, service: { unitprice: number }) =>
-      acc + (Number(service.unitprice) || 0), 0
-    );
+    // Calculate totals
+    const subtotal = services.reduce((acc: number, service: Service) => {
+      const quantity = service.quantity || 1;
+      const unitPrice = Number(service.unitprice) || 0;
+      return acc + (quantity * unitPrice);
+    }, 0);
   
-    const tax_total = services.reduce((acc: number, service: { unitprice: number, istaxed: boolean }) =>
-      acc + (service.istaxed ? (Number(service.unitprice) * TAX_RATE) : 0), 0
-    );
+    const tax_total = services.reduce((acc: number, service: Service) => {
+      if (!service.istaxed) return acc;
+      const quantity = service.quantity || 1;
+      const unitPrice = Number(service.unitprice) || 0;
+      return acc + (quantity * unitPrice * TAX_RATE);
+    }, 0);
     
     const total_amount = subtotal + tax_total;
 
@@ -67,10 +113,11 @@ export async function POST(request: Request) {
     const invoiceResult = await client.query(invoiceQuery);
     const invoice_id = invoiceResult.rows[0].invoice_id;
 
+    // Insert each service as a line item with quantity
     for (const service of services) {
-      console.log('Processing service:', service);
+      if (!service.servicename || !service.service_id) continue;
       
-      const quantity = 1;
+      const quantity = Math.max(1, service.quantity || 1);
       const unit_price = Number(service.unitprice) || 0;
       const total_price = unit_price * quantity;
 
@@ -113,46 +160,5 @@ export async function POST(request: Request) {
     );
   } finally {
     client.release();
-  }
-}
-
-export async function GET() {
-  try {
-    const query = `
-      SELECT 
-        i.invoice_id,
-        c.customer_name,
-        i.date,
-        i.duedate,
-        i.totalamount,
-        i.vin,
-        i.po_number,
-        i.status,
-        i.description,
-        i.subtotal,
-        i.tax_total,
-        i.private_comments
-      FROM invoices i
-      JOIN customer c ON i.customer_id = c.customer_id
-      ORDER BY i.date DESC
-    `;
-    
-    const result = await pool.query(query);
-    
-    return NextResponse.json({ 
-      invoices: result.rows 
-    }, {
-      headers: {
-
-        'Cache-Control': 's-maxage=60, stale-while-revalidate'
-      }
-    });
-    
-  } catch (err) {
-    console.error('Error fetching invoices:', err);
-    return NextResponse.json(
-      { error: 'Internal Server Error' }, 
-      { status: 500 }
-    );
   }
 }

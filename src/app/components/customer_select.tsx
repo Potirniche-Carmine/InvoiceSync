@@ -1,14 +1,19 @@
 import { useState, useEffect } from 'react';
-import {Customer} from '@/app/lib/types';
+import { Customer } from '@/app/lib/types';
 
-  export interface CustomerSelectProps {
-    onSelect: (customer: Customer | null) => void;
-    initialCustomer?: Customer;
-  }
+interface CustomerSelectProps {
+  onSelect: (customer: Customer) => void;
+  initialCustomer?: Customer | null;
+  disabled?: boolean;
+}
 
-export default function CustomerSelect({ onSelect }: CustomerSelectProps) {
+export default function CustomerSelect({ 
+  onSelect, 
+  initialCustomer = null,
+  disabled = false 
+}: CustomerSelectProps) {
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(initialCustomer?.customer_name || '');
   const [, setIsLoading] = useState(true);
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -28,6 +33,13 @@ export default function CustomerSelect({ onSelect }: CustomerSelectProps) {
     fetchCustomers();
   }, []);
 
+  // Set initial customer name when provided
+  useEffect(() => {
+    if (initialCustomer) {
+      setSearch(initialCustomer.customer_name);
+    }
+  }, [initialCustomer]);
+
   const filteredCustomers = customers.filter(customer =>
     customer.customer_name.toLowerCase().includes(search.toLowerCase())
   );
@@ -42,26 +54,36 @@ export default function CustomerSelect({ onSelect }: CustomerSelectProps) {
     <div className="relative">
       <input
         type="text"
-        className="w-full p-2 border rounded"
+        className={`w-full p-2 border rounded ${disabled ? 'bg-gray-100' : 'bg-white'}`}
         placeholder="Search customers..."
         value={search}
         onChange={(e) => {
           setSearch(e.target.value);
-          setShowDropdown(true); 
+          setShowDropdown(!disabled);
         }}
-        onFocus={() => setShowDropdown(true)} 
+        onFocus={() => setShowDropdown(!disabled)}
+        disabled={disabled}
       />
-      {showDropdown && search && (
-        <div className="absolute z-10 w-full mt-1 bg-white border rounded shadow-lg max-h-60 overflow-auto">
-          {filteredCustomers.map((customer) => (
-            <div
-              key={customer.customer_id}
-              className="p-2 hover:bg-gray-100 cursor-pointer"
-              onClick={() => handleSelect(customer)}
-            >
-              {customer.customer_name}
-            </div>
-          ))}
+      {showDropdown && search && !disabled && (
+        <div className="absolute z-20 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
+          {filteredCustomers.length > 0 ? (
+            filteredCustomers.map((customer) => (
+              <div
+                key={customer.customer_id}
+                className="p-2 hover:bg-gray-100 cursor-pointer"
+                onClick={() => handleSelect(customer)}
+              >
+                <div className="font-medium">{customer.customer_name}</div>
+                {customer.customer_address && (
+                  <div className="text-sm text-gray-500 truncate">
+                    {customer.customer_address}
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+            <div className="p-2 text-gray-500">No customers found</div>
+          )}
         </div>
       )}
     </div>
