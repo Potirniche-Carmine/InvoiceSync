@@ -52,13 +52,14 @@ async function getInvoice(id: string): Promise<DetailedInvoice | null> {
   }
 }
 
-interface EditInvoicePageProps {
+type EditInvoicePageProps = {
   params: Promise<{ id: string }>;
-}
+};
 
 export default async function EditInvoicePage({ params }: EditInvoicePageProps) {
   const awaitedParams = await params;
   const id = awaitedParams.id;
+  
   const invoice = await getInvoice(id);
   
   if (!invoice) {

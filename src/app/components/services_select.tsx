@@ -4,6 +4,7 @@ import { Label } from "@/app/components/ui/label";
 import { Service, InvoiceService } from "@/app/lib/types";
 import { Button } from "@/app/components/ui/button";
 import { Trash } from "lucide-react";
+import { TAX_RATE_DISPLAY } from "@/app/lib/constants";
 
 interface ServiceSelectProps {
   onSelect: (service: InvoiceService) => void;
@@ -27,6 +28,11 @@ export default function ServiceSelect({
   );
   const [editedService, setEditedService] = useState<InvoiceService | null>(
     initialService ? { ...initialService, quantity: initialService.quantity || 1 } : null
+  );
+  
+  // Use string for price input to avoid decimal/typing issues
+  const [priceInput, setPriceInput] = useState(
+    initialService?.unitprice ? initialService.unitprice.toString() : '0'
   );
 
   // Fetch services on component mount
@@ -52,6 +58,7 @@ export default function ServiceSelect({
       setSelectedService(initialService);
       setEditedService(initialService);
       setSearch(initialService.servicename);
+      setPriceInput(initialService.unitprice.toString());
     }
   }, [initialService]);
 
@@ -71,6 +78,7 @@ export default function ServiceSelect({
     setSelectedService(invoiceService);
     setEditedService(invoiceService);
     setSearch(service.servicename);
+    setPriceInput(service.unitprice.toString());
     setShowDropdown(false);
     onSelect(invoiceService);
   };
@@ -106,6 +114,7 @@ export default function ServiceSelect({
       setServices(prev => [...prev, formattedService]);
       setSelectedService(formattedService);
       setEditedService(formattedService);
+      setPriceInput('0'); // Set to string '0' for new service
       setShowDropdown(false);
       onSelect(formattedService);
     } catch (error) {
@@ -169,6 +178,27 @@ export default function ServiceSelect({
     
     setEditedService(updatedService);
     onSelect(updatedService);
+  };
+
+  // Handle price input change - now works with string to allow for better editing
+  const handlePriceInputChange = (value: string) => {
+    // Allow for empty input or valid decimal numbers
+    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+      setPriceInput(value);
+      
+      if (!editedService) return;
+      
+      // Convert to number for calculations, default to 0 if empty
+      const unitprice = value === '' ? 0 : parseFloat(value);
+      const updatedService = {
+        ...editedService,
+        unitprice,
+        totalprice: (editedService.quantity || 1) * unitprice
+      };
+      
+      setEditedService(updatedService);
+      onSelect(updatedService);
+    }
   };
 
   const filteredServices = services.filter(service =>
@@ -249,22 +279,16 @@ export default function ServiceSelect({
                 <div className="relative">
                   <span className="absolute left-3 top-2">$</span>
                   <input
-                    type="number"
-                    step="0.01"
+                    type="text"
                     className="w-full bg-white p-2 pl-6 border rounded"
-                    value={editedService?.unitprice || 0}
-                    onChange={(e) => {
-                      if (!editedService) return;
-                      const unitprice = parseFloat(e.target.value) || 0;
-                      const updatedService = {
-                        ...editedService,
-                        unitprice,
-                        totalprice: (editedService.quantity || 1) * unitprice
-                      };
-                      setEditedService(updatedService);
-                      onSelect(updatedService);
+                    value={priceInput}
+                    onChange={(e) => handlePriceInputChange(e.target.value)}
+                    onBlur={() => {
+                      // On blur, format the price and update service
+                      const formattedPrice = priceInput === '' ? '0' : parseFloat(priceInput).toString();
+                      setPriceInput(formattedPrice);
+                      handleUpdateService();
                     }}
-                    onBlur={() => handleUpdateService()}
                   />
                 </div>
               </div>
@@ -289,7 +313,7 @@ export default function ServiceSelect({
             </div>
             
             <div className="flex justify-between items-center p-2 mt-2 bg-gray-50 rounded">
-              <Label>Apply Tax (8.75%)</Label>
+              <Label>Apply Tax ({TAX_RATE_DISPLAY})</Label>
               <Switch
                 id="Tax"
                 checked={Boolean(editedService?.istaxed)}

@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/app/lib/db';
 import type {Service} from '@/app/lib/types';
+import { TAX_RATE } from '@/app/lib/constants';
  
-const TAX_RATE = 0.0875;
-
 // GET all invoices - properly named and exported
 export async function GET() {
   try {

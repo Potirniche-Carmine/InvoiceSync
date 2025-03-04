@@ -11,9 +11,8 @@ import { DatePicker } from '@/app/components/datepicker';
 import { DateRange } from "react-day-picker";
 import { Card, CardContent } from '@/app/components/ui/card';
 import { Alert, AlertDescription } from '@/app/components/ui/alert';
-
-const TAX_RATE = 0.0875;
-
+import VinDecoder from '@/app/components/vinDecoder';
+import {TAX_RATE, TAX_RATE_DISPLAY} from "@/app/lib/constants";
 interface CreateInvoiceFormProps {
   mode?: 'create' | 'edit';
   initialInvoice?: DetailedInvoice;
@@ -47,6 +46,9 @@ export default function CreateInvoiceForm({
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const vinDecoderRef = React.useRef<{
+    decodeVin: () => Promise<void>;
+  } | null>(null);
 
   // Add a blank service slot if there are no services
   useEffect(() => {
@@ -81,6 +83,22 @@ export default function CreateInvoiceForm({
         return prev.filter((_, i) => i !== index);
       }
       return prev;
+    });
+  };
+
+  const handleVehicleInfoAdded = (vehicleInfo: string) => {
+    setDescription(prev => {
+      if (prev.includes(`Last 8#: ${vin.slice(-8)}`)) {
+        const pattern = new RegExp(`------------------------------[\\s\\S]*?Last 8#: ${vin.slice(-8)}`, 'g');
+        return prev.replace(pattern, vehicleInfo.trim());
+      }
+      if (!prev) {
+        return vehicleInfo.trim();
+      } else if (prev.endsWith('\n')) {
+        return prev + vehicleInfo.trim();
+      } else {
+        return prev + vehicleInfo;
+      }
     });
   };
 
@@ -217,16 +235,25 @@ export default function CreateInvoiceForm({
                 />
               </div>
 
-              <div>
+              <div className="space-y-1">
                 <label className="block mb-1 font-medium">VIN#</label>
                 <input
                   id="vin"
                   type="text"
                   value={vin}
-                  onChange={(e) => setVIN(e.target.value)}
+                  onChange={(e) => setVIN(e.target.value.toUpperCase())}
                   className="w-full p-2 border rounded"
                   placeholder="e.g. 1HGCM82633A123456"
+                  maxLength={17}
                 />
+                {mode === 'create' && (
+                  <VinDecoder 
+                    ref={vinDecoderRef}
+                    vin={vin} 
+                    onVehicleInfoAdded={handleVehicleInfoAdded} 
+                    disabled={isSubmitting}
+                  />
+                )}
               </div>
             </div>
 
@@ -248,7 +275,7 @@ export default function CreateInvoiceForm({
                 value={comments}
                 onChange={(e) => setComments(e.target.value)}
                 className="w-full p-2 border rounded"
-                rows={2}
+                rows={3}
                 placeholder="Internal notes regarding this job"
               />
             </div>
@@ -316,7 +343,7 @@ export default function CreateInvoiceForm({
               <span>${calculateTotals().subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span>Tax (8.75%):</span>
+              <span>Tax ({TAX_RATE_DISPLAY}):</span>
               <span>${calculateTotals().taxTotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2">
