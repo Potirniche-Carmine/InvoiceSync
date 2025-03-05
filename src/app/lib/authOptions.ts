@@ -28,7 +28,7 @@ export const authOptions: AuthOptions = {
           }
 
           const encodedHash = process.env.ADMIN_PASSWORD_HASH;
-          if (!encodedHash || credentials.username !== process.env.ADMIN_USERNAME) {
+          if (!encodedHash || credentials.username.toLowerCase() !== process.env.ADMIN_USERNAME?.toLowerCase()) {
             throw new Error("Invalid username/password. Please try again");
           }
           const decodedHash = Buffer.from(encodedHash, 'base64').toString();
