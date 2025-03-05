@@ -5,7 +5,7 @@ import { TAX_RATE } from '@/app/lib/constants';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { [key: string]: string } }
 ) {
   const invoice_id = params.id;
   const client = await pool.connect();
@@ -133,7 +133,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { [key: string]: string } }
 ) {
   const invoice_id = params.id;
   const client = await pool.connect();
