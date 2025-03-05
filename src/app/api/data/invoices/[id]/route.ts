@@ -5,14 +5,15 @@ import { TAX_RATE } from '@/app/lib/constants';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { [key: string]: string } }
+  { params }: { params: { id: string | string[] } }
 ) {
-  const invoice_id = params.id;
+  // Ensure you have a single id if it's an array.
+  const invoice_id = Array.isArray(params.id) ? params.id[0] : params.id;
   const client = await pool.connect();
-  
+
   try {
     await client.query('BEGIN');
-    
+
     const {
       customer_id,
       PO,
@@ -27,16 +28,16 @@ export async function PUT(
     const subtotal = services.reduce((acc: number, service: Service) => {
       const quantity = service.quantity || 1;
       const unitPrice = Number(service.unitprice) || 0;
-      return acc + (quantity * unitPrice);
+      return acc + quantity * unitPrice;
     }, 0);
-  
+
     const tax_total = services.reduce((acc: number, service: Service) => {
       if (!service.istaxed) return acc;
       const quantity = service.quantity || 1;
       const unitPrice = Number(service.unitprice) || 0;
-      return acc + (quantity * unitPrice * TAX_RATE);
+      return acc + quantity * unitPrice * TAX_RATE;
     }, 0);
-    
+
     const total_amount = subtotal + tax_total;
 
     const invoiceQuery = {
@@ -71,7 +72,7 @@ export async function PUT(
     };
 
     const result = await client.query(invoiceQuery);
-    
+
     if (result.rowCount === 0) {
       await client.query('ROLLBACK');
       return NextResponse.json({ error: 'Invoice not found' }, { status: 404 });
@@ -83,7 +84,7 @@ export async function PUT(
     // Insert updated service details
     for (const service of services) {
       if (!service.servicename || !service.service_id) continue;
-      
+
       const quantity = Math.max(1, service.quantity || 1);
       const unit_price = Number(service.unitprice) || 0;
       const total_price = unit_price * quantity;
@@ -98,29 +99,21 @@ export async function PUT(
             totalprice
           ) VALUES ($1, $2, $3, $4, $5)
         `,
-        values: [
-          invoice_id,
-          service.service_id,
-          quantity,
-          unit_price,
-          total_price
-        ]
+        values: [invoice_id, service.service_id, quantity, unit_price, total_price]
       };
 
       await client.query(detailQuery);
     }
-    
+
     await client.query('COMMIT');
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: 'Invoice updated successfully',
-      invoice_id 
+      invoice_id
     });
-
   } catch (error) {
     await client.query('ROLLBACK');
-    
     console.error('Error updating invoice:', error);
     return NextResponse.json(
       { error: 'Failed to update invoice', details: error instanceof Error ? error.message : 'Unknown error' },
@@ -133,33 +126,29 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { [key: string]: string } }
+  { params }: { params: { id: string | string[] } }
 ) {
-  const invoice_id = params.id;
+  const invoice_id = Array.isArray(params.id) ? params.id[0] : params.id;
   const client = await pool.connect();
-  
+
   try {
     await client.query('BEGIN');
-    
-
     await client.query('DELETE FROM invoicedetail WHERE invoice_id = $1', [invoice_id]);
-    
-    const result = await client.query('DELETE FROM invoices WHERE invoice_id = $1 RETURNING invoice_id', [invoice_id]);
-    
+
+    const result = await client.query(
+      'DELETE FROM invoices WHERE invoice_id = $1 RETURNING invoice_id',
+      [invoice_id]
+    );
+
     if (result.rowCount === 0) {
+      await client.query('ROLLBACK');
       return NextResponse.json({ error: 'Invoice not found' }, { status: 404 });
     }
-    
+
     await client.query('COMMIT');
-    
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Invoice deleted successfully'
-    });
-    
+    return NextResponse.json({ success: true, message: 'Invoice deleted successfully' });
   } catch (error) {
     await client.query('ROLLBACK');
-    
     console.error('Error deleting invoice:', error);
     return NextResponse.json(
       { error: 'Failed to delete invoice', details: error instanceof Error ? error.message : 'Unknown error' },
