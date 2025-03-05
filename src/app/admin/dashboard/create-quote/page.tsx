@@ -1,6 +1,5 @@
-'use client';
-export default function createQuote() {
-  return( 
-    <h1>CreateQuote</h1>
-  );
+import CreateQuoteForm from '@/app/components/createQuoteForm'
+
+export default function CreateQuotePage() {
+  return <CreateQuoteForm />
 }

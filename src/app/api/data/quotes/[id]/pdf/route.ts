@@ -3,13 +3,13 @@ import { pool } from '@/app/lib/db';
 import * as puppeteer from 'puppeteer';
 import { TAX_RATE } from '@/app/lib/constants';
 
-interface DetailedInvoice {
-  invoice_id: string;
+interface Detailedquote {
+  quote_id: string;
   customer_id: number;
   customer_name: string;
   customer_address: string | null;
   date: string;
-  duedate: string;
+
   totalamount: number | string;
   status: string;
   po_number: string;
@@ -18,10 +18,10 @@ interface DetailedInvoice {
   subtotal: number | string;
   tax_total: number | string;
   private_comments: string;
-  services: InvoiceService[];
+  services: quoteService[];
 }
 
-interface InvoiceService {
+interface quoteService {
   service_id: number;
   servicename: string;
   description: string;
@@ -39,12 +39,10 @@ function formatCurrency(value: unknown): string {
   if (typeof value === 'number') {
     numValue = value;
   } else if (typeof value === 'string') {
-    // Remove any quotes if they exist
     const cleanStr = value.toString().replace(/^"|"$/g, '');
     numValue = parseFloat(cleanStr);
   } else if (typeof value === 'object') {
     try {
-      // Try to convert to string then parse
       const strValue = String(value);
       numValue = parseFloat(strValue);
     } catch {
@@ -59,7 +57,7 @@ function formatCurrency(value: unknown): string {
   return numValue.toFixed(2);
 }
 
-async function getInvoice(id: string): Promise<DetailedInvoice | null> {
+async function getquote(id: string): Promise<Detailedquote | null> {
   try {
     const query = `
       SELECT 
@@ -81,12 +79,12 @@ async function getInvoice(id: string): Promise<DetailedInvoice | null> {
           ) FILTER (WHERE s.service_id IS NOT NULL),
           '[]'::json
         ) as services
-      FROM invoices i
+      FROM quotes i
       JOIN customer c ON i.customer_id = c.customer_id
-      LEFT JOIN invoicedetail id ON i.invoice_id = id.invoice_id
+      LEFT JOIN quotedetail id ON i.quote_id = id.quote_id
       LEFT JOIN services s ON id.service_id = s.service_id
-      WHERE i.invoice_id = $1
-      GROUP BY i.invoice_id, c.customer_id, c.customer_name, c.customer_address
+      WHERE i.quote_id = $1
+      GROUP BY i.quote_id, c.customer_id, c.customer_name, c.customer_address
     `;
     
     const result = await pool.query(query, [id]);
@@ -95,33 +93,25 @@ async function getInvoice(id: string): Promise<DetailedInvoice | null> {
       return null;
     }
     
-    const invoice = result.rows[0];
-    if (invoice.services && invoice.services[0] && invoice.services[0].service_id === null) {
-      invoice.services = [];
+    const quote = result.rows[0];
+    if (quote.services && quote.services[0] && quote.services[0].service_id === null) {
+      quote.services = [];
     }
     
-    return invoice;
+    return quote;
   } catch (err) {
-    console.error('Error fetching invoice:', err);
+    console.error('Error fetching quote:', err);
     return null;
   }
 }
 
-function generateHtml(invoice: DetailedInvoice): string {
-  // Format dates
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return 'N/A';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  };
+function generateHtml(quote: Detailedquote): string {
 
-  // Extract vehicle information from description if available
   let vehicleYear = '';
   let vehicleMakeModel = '';
-  let description = invoice.description || '';
-  const po_number = invoice.po_number;
-  
-  // Try to extract vehicle info from description
+  let description = quote.description || '';
+  const po_number = quote.po_number;
+
   const vehicleInfoRegex = /------------------------------\s*(.*?)\s*\nLast 8#:/;
   const match = description.match(vehicleInfoRegex);
   
@@ -151,8 +141,8 @@ function generateHtml(invoice: DetailedInvoice): string {
     description = description.replace(/------------------------------[\s\S]*?Last 8#:[^\n]*(\n|$)/, '').trim();
   }
   
-  // Format items for the invoice
-  const items = invoice.services.map(service => {
+  // Format items for the quote
+  const items = quote.services.map(service => {
     const taxRate = service.istaxed ? (TAX_RATE * 100).toFixed(2) : '0.00';
     return {
       quantity: service.quantity,
@@ -164,11 +154,11 @@ function generateHtml(invoice: DetailedInvoice): string {
   });
 
   // Extract VIN last 8 if available
-  const vinLast8 = invoice.vin && invoice.vin.length >= 8 ? invoice.vin.slice(-8) : '';
+  const vinLast8 = quote.vin && quote.vin.length >= 8 ? quote.vin.slice(-8) : '';
 
-  const showStatusBanner = invoice.status === 'paid' || invoice.status === 'overdue';
-  const statusText = invoice.status === 'paid' ? 'PAID' : 'OVERDUE';
-  const statusColor = invoice.status === 'paid' ? '#28a745' : '#dc3545';
+  const showStatusBanner = quote.status === 'paid' || quote.status === 'overdue';
+  const statusText = quote.status === 'paid' ? 'PAID' : 'OVERDUE';
+  const statusColor = quote.status === 'paid' ? '#28a745' : '#dc3545';
   
   // Prepare HTML template with mustache-style variables
   let html = `<!DOCTYPE html>
@@ -176,7 +166,7 @@ function generateHtml(invoice: DetailedInvoice): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Invoice ${invoice.invoice_id}</title>
+  <title>quote ${quote.quote_id}</title>
   <style>
     :root {
       --primary-color: #0055a4;
@@ -240,25 +230,25 @@ function generateHtml(invoice: DetailedInvoice): string {
       font-size: 12pt; 
     }
     
-    .invoice-details {
+    .quote-details {
       text-align: right;
     }
     
-    .invoice-title {
+    .quote-title {
       font-size: 16pt; 
       color: var(--primary-color);
       font-weight: bold;
       margin-bottom: 5px; 
     }
     
-    .invoice-data {
+    .quote-data {
       display: grid;
       grid-template-columns: max-content auto;
       gap: 3px 10px; 
       font-size: 8pt; 
     }
     
-    .invoice-data dt {
+    .quote-data dt {
       font-weight: 600;
       text-align: right;
     }
@@ -429,18 +419,13 @@ if (showStatusBanner) {
       </div>
     </div>
     
-    <div class="invoice-details">
-      <h1 class="invoice-title">Invoice</h1>
-      <dl class="invoice-data">
-        <dt>Invoice No:</dt>
-        <dd>${invoice.invoice_id}</dd>
-        
+    <div class="quote-details">
+      <h1 class="quote-title">Quote</h1>
+      <dl class="quote-data">
+        <dt>Quote No:</dt>
+        <dd>${quote.quote_id}</dd>
         <dt>Date:</dt>
-        <dd>${formatDate(invoice.date)}</dd>
-        
-        <dt>Due Date:</dt>
-        <dd>${formatDate(invoice.duedate)}</dd>
-        
+        <dd>${new Date(quote.date).toLocaleDateString()}</dd>
         <dt>Salesperson:</dt>
         <dd>Julian</dd>
       </dl>
@@ -450,8 +435,8 @@ if (showStatusBanner) {
   <div class="client-section">
     <h3 class="section-title">Bill To:</h3>
     <div class="bill-to">
-      <p><strong>${invoice.customer_name}</strong></p>
-      <p>${invoice.customer_address || ''}</p>
+      <p><strong>${quote.customer_name}</strong></p>
+      <p>${quote.customer_address || ''}</p>
     </div>
   </div>`;
 
@@ -459,7 +444,7 @@ if (showStatusBanner) {
   html += `
   <div class="po-ro-section">
     <div class="po-ro-box" style="width: 100%">
-      <strong>PO#:</strong> ${invoice.po_number || ''}
+      <strong>PO#:</strong> ${quote.po_number || ''}
     </div>
   </div>`;
   }
@@ -494,19 +479,19 @@ if (showStatusBanner) {
   <div class="total-section">
     <div class="total-row">
       <span>Subtotal:</span>
-      <span>$${formatCurrency(invoice.subtotal)}</span>
+      <span>$${formatCurrency(quote.subtotal)}</span>
     </div>
     <div class="total-row">
       <span>Tax:</span>
-      <span>$${formatCurrency(invoice.tax_total)}</span>
+      <span>$${formatCurrency(quote.tax_total)}</span>
     </div>
     <div class="total-row grand-total">
       <span>Total:</span>
-      <span>$${formatCurrency(invoice.totalamount)}</span>
+      <span>$${formatCurrency(quote.totalamount)}</span>
     </div>
     <div class="total-row">
       <span>Balance Due:</span>
-      <span>$${invoice.status === 'paid' ? '0.00' : formatCurrency(invoice.totalamount)}</span>
+      <span>$${quote.status === 'paid' ? '0.00' : formatCurrency(quote.totalamount)}</span>
     </div>
   </div>`;
 
@@ -523,7 +508,7 @@ if (showStatusBanner) {
     <h3 class="section-title">Vehicle Information:</h3>
     <dl class="vehicle-details">
       <dt>VIN #:</dt>
-      <dd>${invoice.vin || 'N/A'}</dd>
+      <dd>${quote.vin || 'N/A'}</dd>
       
       <dt>Last 8:</dt>
       <dd>${vinLast8 || 'N/A'}</dd>
@@ -551,7 +536,7 @@ if (showStatusBanner) {
   
   <div class="footer">
     <p class="thank-you">Thank you for your business!</p>
-    <p>If you have any questions about this invoice, please contact us.</p>
+    <p>If you have any questions about this quote, please contact us.</p>
   </div>
 </body>
 </html>`;
@@ -566,17 +551,15 @@ export async function GET(
   try {
     const id = (await params).id;
     
-    // Fetch invoice data from database
-    const invoice = await getInvoice(id);
+    // Fetch quote data from database
+    const quote = await getquote(id);
     
-    if (!invoice) {
-      return NextResponse.json({ error: 'Invoice not found' }, { status: 404 });
+    if (!quote) {
+      return NextResponse.json({ error: 'quote not found' }, { status: 404 });
     }
     
-    // Generate HTML from invoice data
-    const html = generateHtml(invoice);
+    const html = generateHtml(quote);
     
-    // Launch puppeteer to convert HTML to PDF
     const browser = await puppeteer.launch({
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
       headless: true,
@@ -604,7 +587,7 @@ export async function GET(
     return new NextResponse(pdf, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="invoice-${id}.pdf"`,
+        'Content-Disposition': `inline; filename="quote-${id}.pdf"`,
       },
     });
   } catch (error) {

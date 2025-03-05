@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import CustomerSelect from '@/app/components/customer_select';
-import { Customer, InvoiceService, DetailedInvoice } from '@/app/lib/types';
+import { Customer, InvoiceService,DetailedQuote } from '@/app/lib/types';
 import { Button } from '@/app/components/ui/button';
 import { Plus, FilePlus, FileEdit } from "lucide-react";
 import ServiceSelect from '@/app/components/services_select';
@@ -13,39 +13,39 @@ import { Card, CardContent } from '@/app/components/ui/card';
 import { Alert, AlertDescription } from '@/app/components/ui/alert';
 import VinDecoder from '@/app/components/vinDecoder';
 import { TAX_RATE, TAX_RATE_DISPLAY } from "@/app/lib/constants";
-import { useSearchParams } from 'next/navigation';
-interface CreateInvoiceFormProps {
+
+interface CreateQuoteFormProps {
   mode?: 'create' | 'edit';
-  initialInvoice?: DetailedInvoice;
+  initialQuote?: DetailedQuote; 
 }
 
-
-export default function CreateInvoiceForm({
-  mode = 'create',
-  initialInvoice
-}: CreateInvoiceFormProps) {
+export default function CreateQuoteForm({ 
+  mode = 'create', 
+  initialQuote 
+}: CreateQuoteFormProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const fromQuoteId = searchParams.get('from_quote');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
-    initialInvoice ? {
-      customer_id: initialInvoice.customer_id,
-      customer_name: initialInvoice.customer_name,
-      customer_address: initialInvoice.customer_address
+    initialQuote ? {
+      customer_id: initialQuote.customer_id,
+      customer_name: initialQuote.customer_name,
+      customer_address: initialQuote.customer_address
     } : null
   );
-  const [PO, setPO] = useState(initialInvoice?.po_number || '');
+  const [PO, setPO] = useState(initialQuote?.po_number || '');
+  
+  // For quotes, we only need a single date (not a range with due date)
   const [date, setDate] = useState<DateRange | undefined>(
-    initialInvoice ? {
-      from: initialInvoice.date ? new Date(initialInvoice.date) : undefined,
-      to: initialInvoice.duedate ? new Date(initialInvoice.duedate) : undefined
+    initialQuote ? {
+      from: initialQuote.date ? new Date(initialQuote.date) : undefined,
+      to: undefined
     } : undefined
   );
-  const [description, setDescription] = useState(initialInvoice?.description || '');
-  const [comments, setComments] = useState(initialInvoice?.private_comments || '');
-  const [vin, setVIN] = useState(initialInvoice?.vin || '');
+  
+  const [description, setDescription] = useState(initialQuote?.description || '');
+  const [comments, setComments] = useState(initialQuote?.private_comments || '');
+  const [vin, setVIN] = useState(initialQuote?.vin || '');
   const [services, setServices] = useState<InvoiceService[]>(
-    initialInvoice?.services || []
+    initialQuote?.services || []
   );
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -54,57 +54,12 @@ export default function CreateInvoiceForm({
     decodeVin: () => Promise<void>;
   } | null>(null);
 
+  // Add a blank service slot if there are no services
   useEffect(() => {
-    const fetchQuoteData = async () => {
-      if (!fromQuoteId) return;
-
-      try {
-        const response = await fetch(`/api/data/quotes/get-for-invoice?quoteId=${fromQuoteId}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch quote data');
-        }
-
-        const data = await response.json();
-        const quote = data.quote;
-
-        setSelectedCustomer({
-          customer_id: quote.customer_id,
-          customer_name: quote.customer_name,
-          customer_address: quote.customer_address
-        });
-
-        setPO(quote.po_number || '');
-        setDescription(quote.description || '');
-        setComments(quote.private_comments || '');
-        setVIN(quote.vin || '');
-
-        const today = new Date();
-        const dueDate = new Date();
-        dueDate.setDate(today.getDate() + 30);
-
-        setDate({
-          from: today,
-          to: dueDate
-        });
-
-        // Set services
-        if (quote.services && quote.services.length > 0) {
-          setServices(quote.services);
-        }
-      } catch (error) {
-        console.error('Error fetching quote data:', error);
-        setError('Failed to load quote data. Please try again.');
-      }
-    };
-
-    fetchQuoteData();
-  }, [fromQuoteId]);
-
-  useEffect(() => {
-    if (services.length === 0 && !initialInvoice) {
+    if (services.length === 0 && !initialQuote) {
       addServiceSelection();
     }
-  }, [services, initialInvoice]);
+  }, [services, initialQuote]);
 
   const handleServiceSelect = (index: number, selectedService: InvoiceService) => {
     setServices(prev => {
@@ -115,7 +70,7 @@ export default function CreateInvoiceForm({
   };
 
   const addServiceSelection = () => {
-    setServices(prev => [...prev, {
+    setServices(prev => [...prev, { 
       service_id: 0,
       servicename: '',
       description: '',
@@ -136,7 +91,7 @@ export default function CreateInvoiceForm({
   };
 
   const handleVehicleInfoAdded = (vehicleInfo: string) => {
-    setDescription(prev => {
+    setDescription((prev: string) => {
       if (prev.includes(`Last 8#: ${vin.slice(-8)}`)) {
         const pattern = new RegExp(`------------------------------[\\s\\S]*?Last 8#: ${vin.slice(-8)}`, 'g');
         return prev.replace(pattern, vehicleInfo.trim());
@@ -163,7 +118,7 @@ export default function CreateInvoiceForm({
       return;
     }
 
-    const validServices = services.filter(s =>
+    const validServices = services.filter(s => 
       s.servicename && s.service_id && s.quantity > 0
     );
 
@@ -181,14 +136,13 @@ export default function CreateInvoiceForm({
         comments,
         vin,
         startDate: date?.from?.toISOString(),
-        dueDate: date?.to?.toISOString(),
         services: validServices,
       };
 
-      const endpoint = mode === 'edit' && initialInvoice
-        ? `/api/data/invoices/${initialInvoice.invoice_id}`
-        : '/api/data/invoices';
-
+      const endpoint = mode === 'edit' && initialQuote
+        ? `/api/data/quotes/${initialQuote.quote_id}`
+        : '/api/data/quotes';
+      
       const method = mode === 'edit' ? 'PUT' : 'POST';
 
       const response = await fetch(endpoint, {
@@ -203,12 +157,12 @@ export default function CreateInvoiceForm({
 
       if (!response.ok) {
         console.error('Server response:', data);
-        throw new Error(data.details || data.error || `Failed to ${mode} invoice`);
+        throw new Error(data.details || data.error || `Failed to ${mode} quote`);
       }
 
       setSuccess(true);
-
-      // Reset form if creating a new invoice
+      
+      // Reset form if creating a new quote
       if (mode === 'create') {
         setPO('');
         setDescription('');
@@ -218,12 +172,12 @@ export default function CreateInvoiceForm({
         setServices([]);
         setDate(undefined);
       }
-
+      
       setTimeout(() => {
-        router.push('/admin/dashboard/invoices?refresh=true');
+        router.push('/admin/dashboard/quotes?refresh=true');
       }, 1000);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : `Failed to ${mode} invoice`;
+      const errorMessage = err instanceof Error ? err.message : `Failed to ${mode} quote`;
       console.error('Error details:', err);
       setError(errorMessage);
     } finally {
@@ -234,12 +188,12 @@ export default function CreateInvoiceForm({
   const calculateTotals = () => {
     return services.reduce((acc, service) => {
       if (!service.servicename) return acc; // Skip empty services
-
+      
       const quantity = service.quantity || 1;
       const unitPrice = service.unitprice || 0;
       const amount = quantity * unitPrice;
       const tax = service.istaxed ? amount * TAX_RATE : 0;
-
+  
       return {
         subtotal: acc.subtotal + amount,
         taxTotal: acc.taxTotal + tax,
@@ -255,25 +209,18 @@ export default function CreateInvoiceForm({
   return (
     <div className="max-w-3xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6">
-        {mode === 'edit' ? 'Edit Invoice' : 'Create New Invoice'}
+        {mode === 'edit' ? 'Edit Quote' : 'Create New Quote'}
       </h1>
-      {fromQuoteId && (
-        <Alert className="mb-6">
-          <AlertDescription>
-            Creating invoice from Quote #{fromQuoteId}
-          </AlertDescription>
-        </Alert>
-      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card>
           <CardContent className="pt-6 space-y-4">
             <div>
               <label className="block mb-1 font-medium">Customer</label>
-              <CustomerSelect
-                onSelect={setSelectedCustomer}
+              <CustomerSelect 
+                onSelect={setSelectedCustomer} 
                 initialCustomer={selectedCustomer}
-                disabled={mode === 'edit'}
+                disabled={mode === 'edit'} 
               />
             </div>
 
@@ -302,10 +249,10 @@ export default function CreateInvoiceForm({
                   maxLength={17}
                 />
                 {mode === 'create' && (
-                  <VinDecoder
+                  <VinDecoder 
                     ref={vinDecoderRef}
-                    vin={vin}
-                    onVehicleInfoAdded={handleVehicleInfoAdded}
+                    vin={vin} 
+                    onVehicleInfoAdded={handleVehicleInfoAdded} 
                     disabled={isSubmitting}
                   />
                 )}
@@ -313,7 +260,7 @@ export default function CreateInvoiceForm({
             </div>
 
             <div>
-              <label className="block mb-1 font-medium">Invoice Date and Due Date</label>
+              <label className="block mb-1 font-medium">Quote Date</label>
               <DatePicker
                 date={date}
                 setDate={setDate}
@@ -361,7 +308,7 @@ export default function CreateInvoiceForm({
                 <Plus size={16} className="mr-1" /> Add Service
               </Button>
             </div>
-
+            
             <div className="space-y-6">
               {services.map((service, index) => (
                 <div key={index} className="border rounded-md p-4 relative">
@@ -382,15 +329,15 @@ export default function CreateInvoiceForm({
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-
+        
         {success && (
           <Alert className="border-green-600 bg-green-50">
             <AlertDescription className="text-green-700">
-              {mode === 'edit' ? 'Invoice updated successfully!' : 'Invoice created successfully!'}
+              {mode === 'edit' ? 'Quote updated successfully!' : 'Quote created successfully!'}
             </AlertDescription>
           </Alert>
         )}
-
+        
         <div className="bg-gray-50 p-4 rounded-md">
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
@@ -416,9 +363,9 @@ export default function CreateInvoiceForm({
           {isSubmitting ? (
             <>Processing...</>
           ) : mode === 'edit' ? (
-            <><FileEdit className="mr-2" /> Update Invoice</>
+            <><FileEdit className="mr-2" /> Update Quote</>
           ) : (
-            <><FilePlus className="mr-2" /> Create Invoice</>
+            <><FilePlus className="mr-2" /> Create Quote</>
           )}
         </Button>
       </form>
