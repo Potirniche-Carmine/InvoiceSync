@@ -1,8 +1,12 @@
-import CreateInvoiceForm from '@/app/components/createInvoiceForm'
-import { Suspense } from 'react'
+'use client';
+
+import { Suspense } from 'react';
+import CreateInvoiceForm from '@/app/components/createInvoiceForm';
 
 export default function CreateInvoicePage() {
-  <Suspense fallback={<div>Loading...</div>}>
-  return <CreateInvoiceForm />
-  </Suspense>
+  return (
+    <Suspense fallback={<div className="max-w-3xl mx-auto p-4">Loading invoice form...</div>}>
+      <CreateInvoiceForm />
+    </Suspense>
+  );
 }
