@@ -1,5 +1,6 @@
 import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcrypt";
 
 declare module "next-auth" {
   interface Session {
@@ -26,11 +27,14 @@ export const authOptions: AuthOptions = {
             throw new Error("Invalid username/password. Please try again");
           }
 
-          if (credentials.username !== process.env.ADMIN_USERNAME) {
+          const encodedHash = process.env.ADMIN_PASSWORD_HASH;
+          if (!encodedHash || credentials.username !== process.env.ADMIN_USERNAME) {
             throw new Error("Invalid username/password. Please try again");
           }
+          const decodedHash = Buffer.from(encodedHash, 'base64').toString();
+          const isValid = await bcrypt.compare(credentials.password, decodedHash);
 
-          if (credentials.password !== process.env.ADMIN_PASSWORD_HASH) {
+          if (!isValid) {
             throw new Error("Invalid username/password. Please try again");
           }
 
