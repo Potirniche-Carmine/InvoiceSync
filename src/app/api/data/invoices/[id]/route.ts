@@ -1,9 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextRequest,NextResponse } from 'next/server';
 import { pool } from '@/app/lib/db';
 import type { Service } from '@/app/lib/types';
+import { TAX_RATE } from '@/app/lib/constants';
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const client = await pool.connect();
@@ -23,9 +24,7 @@ export async function PUT(
       services,
     } = await request.json();
 
-    const TAX_RATE = 0.0875;
 
-    // Calculate totals
     const subtotal = services.reduce((acc: number, service: Service) => {
       const quantity = service.quantity || 1;
       const unitPrice = Number(service.unitprice) || 0;
@@ -134,7 +133,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const client = await pool.connect();
