@@ -38,3 +38,28 @@ export interface DetailedInvoice extends Invoice {
   services: InvoiceService[];
   customer_id: number;
 }
+
+export interface Quote {
+  quote_id: string;
+  customer_name: string;
+  date: string;
+  totalamount: number;
+  status: 'pending';
+  po_number: string;
+  vin: string;
+  description: string;
+  subtotal: number;
+  tax_total: number;
+  private_comments: string;
+}
+
+export interface QuoteService extends Service {
+  quantity: number; 
+  totalprice: number;
+}
+
+export interface DetailedQuote extends Quote {
+  customer_address: string;
+  services: QuoteService[];
+  customer_id: number;
+}
