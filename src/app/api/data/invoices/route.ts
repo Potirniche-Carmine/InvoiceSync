@@ -3,7 +3,6 @@ import { pool } from '@/app/lib/db';
 import type {Service} from '@/app/lib/types';
 import { TAX_RATE } from '@/app/lib/constants';
  
-// GET all invoices - properly named and exported
 export async function GET() {
   try {
     const query = `
@@ -43,7 +42,6 @@ export async function GET() {
   }
 }
 
-// POST new invoice
 export async function POST(request: Request) {
   const client = await pool.connect();
   

@@ -27,10 +27,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
-import { CircleDollarSign, Printer, Download} from 'lucide-react';
+import { CircleDollarSign, Printer, Download, Trash2, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 import type { Invoice } from '@/app/lib/types';
 import { useSearchParams } from 'next/navigation';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/app/components/ui/alert-dialog";
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -43,6 +53,9 @@ export default function InvoiceList() {
     vin: '',
     status: 'all'
   });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [invoiceToDelete, setInvoiceToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const searchParams = useSearchParams();
   const refreshParam = searchParams.get('refresh');
@@ -84,7 +97,14 @@ export default function InvoiceList() {
         matchesVIN && matchesStatus;
     });
 
-    setFilteredInvoices(filtered);
+    const sorted = [...filtered].sort((a, b) => {
+      const idA = typeof a.invoice_id === 'string' ? parseInt(a.invoice_id) : a.invoice_id;
+      const idB = typeof b.invoice_id === 'string' ? parseInt(b.invoice_id) : b.invoice_id;
+      
+      return idB - idA; 
+    });
+
+    setFilteredInvoices(sorted);
   }, [filters, data]);
 
   const getStatusColor = (status: string) => {
@@ -103,6 +123,7 @@ export default function InvoiceList() {
 
   const handlePaymentMethod = async (invoiceId: string, method: string) => {
     try {
+      
       const response = await fetch(`/api/data/invoices/${invoiceId}/payment`, {
         method: 'POST',
         headers: {
@@ -111,14 +132,17 @@ export default function InvoiceList() {
         body: JSON.stringify({ paymentMethod: method }),
       });
       
-      if (response.ok) {
-        mutate();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Failed to process payment with ${method}`);
       }
+      
+      await mutate();
+      
     } catch (error) {
       console.error(`Error processing payment for invoice ${invoiceId}:`, error);
     }
   };
-
   const handlePrintInvoice = async (invoiceId: string) => {
     try {
       const response = await fetch(`/api/data/invoices/${invoiceId}/pdf`, {
@@ -165,6 +189,34 @@ export default function InvoiceList() {
       a.remove();
     } catch (err) {
       console.error('Error generating PDF:', err);
+    }
+  };
+
+  const confirmDeleteInvoice = (invoiceId: string) => {
+    setInvoiceToDelete(invoiceId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteInvoice = async () => {
+    if (!invoiceToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/data/invoices/${invoiceToDelete}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete invoice');
+      }
+      
+      setDeleteDialogOpen(false);
+      mutate();
+    } catch (err) {
+      console.error('Error deleting invoice:', err);
+    } finally {
+      setIsDeleting(false);
+      setInvoiceToDelete(null);
     }
   };
 
@@ -326,6 +378,16 @@ export default function InvoiceList() {
                         <Download className="h-8 w-8" />
                         <span className="sr-only">Download invoice</span>
                       </Button>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="hover:bg-red-100 rounded-full h-10 w-10 p-0 flex items-center justify-center text-red-600"
+                        onClick={() => confirmDeleteInvoice(invoice.invoice_id)}
+                      >
+                        <Trash2 className="h-8 w-8" />
+                        <span className="sr-only">Delete invoice</span>
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -334,6 +396,31 @@ export default function InvoiceList() {
           </Table>
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+              Confirm Delete
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete invoice #{invoiceToDelete}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteInvoice}
+              disabled={isDeleting}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Invoice'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
