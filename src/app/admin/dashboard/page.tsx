@@ -25,7 +25,7 @@ export default async function DashboardPage() {
           />
           <Card
             title="View Invoices"
-            icon={<BookOpen color="#edff00"/>}
+            icon={<BookOpen color="#aa00ff"/>}
             redirectTo="/admin/dashboard/invoices"
           />
           <Card
@@ -35,7 +35,7 @@ export default async function DashboardPage() {
           />
           <Card
             title="View Quotes"
-            icon={<BookOpen color="#ff8a00"/>}
+            icon={<BookOpen color="#ff8c00"/>}
             redirectTo="/admin/dashboard/quotes"
           />
           <Card

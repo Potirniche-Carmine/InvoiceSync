@@ -30,6 +30,7 @@ import {
 import { CircleDollarSign, Printer, Download} from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 import type { Invoice } from '@/app/lib/types';
+import { useSearchParams } from 'next/navigation';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -43,12 +44,26 @@ export default function InvoiceList() {
     status: 'all'
   });
 
-  const { data, error, isLoading } = useSWR('/api/data/invoices', fetcher, {
+  const searchParams = useSearchParams();
+  const refreshParam = searchParams.get('refresh');
+
+  const { data, error, isLoading, mutate } = useSWR('/api/data/invoices', fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 60000,
+    dedupingInterval: refreshParam ? 0 : 60000, // No dedupe if refresh param is present
     refreshInterval: 300000,
   });
+
+  useEffect(() => {
+    if (refreshParam) {
+      mutate();
+      
+      const params = new URLSearchParams(window.location.search);
+      params.delete('refresh');
+      const newUrl = window.location.pathname + (params.toString() ? `?${params.toString()}` : '');
+      window.history.replaceState({ path: newUrl }, '', newUrl);
+    }
+  }, [refreshParam, mutate]);
 
   useEffect(() => {
     if (!data?.invoices) return;
@@ -87,15 +102,70 @@ export default function InvoiceList() {
   };
 
   const handlePaymentMethod = async (invoiceId: string, method: string) => {
-    console.log(`Invoice ${invoiceId} paid by ${method}`);
+    try {
+      const response = await fetch(`/api/data/invoices/${invoiceId}/payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ paymentMethod: method }),
+      });
+      
+      if (response.ok) {
+        mutate();
+      }
+    } catch (error) {
+      console.error(`Error processing payment for invoice ${invoiceId}:`, error);
+    }
   };
 
-  const handlePrintInvoice = (invoiceId: string) => {
-    console.log(`Printing invoice ${invoiceId}`);
+  const handlePrintInvoice = async (invoiceId: string) => {
+    try {
+      const response = await fetch(`/api/data/invoices/${invoiceId}/pdf`, {
+        method: 'GET',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate PDF for printing');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const printWindow = window.open(url);
+      
+      if (printWindow) {
+        printWindow.onload = function() {
+          printWindow.print();
+        };
+      }
+    } catch (err) {
+      console.error('Error printing invoice:', err);
+    }
   };
 
-  const handleDownloadInvoice = (invoiceId: string) => {
-    console.log(`Downloading invoice ${invoiceId}`);
+  const handleDownloadInvoice = async (invoiceId: string) => {
+    try {
+      const response = await fetch(`/api/data/invoices/${invoiceId}/pdf`, {
+        method: 'GET',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate PDF');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `invoice-${invoiceId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+    }
   };
 
   if (error) {

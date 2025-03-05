@@ -39,7 +39,6 @@ async function getInvoice(id: string): Promise<DetailedInvoice | null> {
       return null;
     }
     
-    // Handle case where services might be null
     const invoice = result.rows[0];
     if (invoice.services && invoice.services[0] && invoice.services[0].service_id === null) {
       invoice.services = [];

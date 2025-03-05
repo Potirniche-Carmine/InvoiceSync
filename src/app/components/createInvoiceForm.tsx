@@ -136,7 +136,6 @@ export default function CreateInvoiceForm({
         services: validServices,
       };
 
-      // API endpoint and method depend on create/edit mode
       const endpoint = mode === 'edit' && initialInvoice
         ? `/api/data/invoices/${initialInvoice.invoice_id}`
         : '/api/data/invoices';
@@ -172,7 +171,7 @@ export default function CreateInvoiceForm({
       }
       
       setTimeout(() => {
-        router.push('/admin/dashboard/invoices');
+        router.push('/admin/dashboard/invoices?refresh=true');
       }, 1000);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : `Failed to ${mode} invoice`;
