@@ -1,18 +1,25 @@
-import { NextRequest,NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/app/lib/db';
 import type { Service } from '@/app/lib/types';
 import { TAX_RATE } from '@/app/lib/constants';
 
+// Updated type definition for the context parameter
+type RouteContext = {
+  params: {
+    id: string;
+  };
+};
+
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
   const client = await pool.connect();
   
   try {
     await client.query('BEGIN');
     
-    const invoice_id = params.id;
+    const invoice_id = context.params.id;
     const {
       customer_id,
       PO,
@@ -23,7 +30,6 @@ export async function PUT(
       dueDate,
       services,
     } = await request.json();
-
 
     const subtotal = services.reduce((acc: number, service: Service) => {
       const quantity = service.quantity || 1;
@@ -134,14 +140,14 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
   const client = await pool.connect();
   
   try {
     await client.query('BEGIN');
     
-    const invoice_id = params.id;
+    const invoice_id = context.params.id;
 
     await client.query('DELETE FROM invoicedetail WHERE invoice_id = $1', [invoice_id]);
     
