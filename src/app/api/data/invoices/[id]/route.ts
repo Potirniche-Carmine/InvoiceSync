@@ -3,12 +3,6 @@ import { pool } from '@/app/lib/db';
 import type { Service } from '@/app/lib/types';
 import { TAX_RATE } from '@/app/lib/constants';
 
-type RouteContext = {
-  params: {
-    id: string;
-  };
-};
-
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
