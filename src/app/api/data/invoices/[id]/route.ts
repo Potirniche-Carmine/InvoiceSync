@@ -5,10 +5,10 @@ import { TAX_RATE } from '@/app/lib/constants';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string | string[] } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  // Ensure you have a single id if it's an array.
-  const invoice_id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const id = (await params).id;
+  const invoice_id = id;
   const client = await pool.connect();
 
   try {
@@ -126,9 +126,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string | string[] } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const invoice_id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const id = (await params).id;
+  const invoice_id = id;
   const client = await pool.connect();
 
   try {
