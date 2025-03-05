@@ -3,7 +3,6 @@ import { pool } from '@/app/lib/db';
 import type { Service } from '@/app/lib/types';
 import { TAX_RATE } from '@/app/lib/constants';
 
-// Updated type definition for the context parameter
 type RouteContext = {
   params: {
     id: string;
@@ -12,14 +11,14 @@ type RouteContext = {
 
 export async function PUT(
   request: NextRequest,
-  context: RouteContext
+  { params }: { params: { id: string } }
 ) {
+  const invoice_id = params.id;
   const client = await pool.connect();
   
   try {
     await client.query('BEGIN');
     
-    const invoice_id = context.params.id;
     const {
       customer_id,
       PO,
@@ -140,14 +139,14 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  context: RouteContext
+  { params }: { params: { id: string } }
 ) {
+  const invoice_id = params.id;
   const client = await pool.connect();
   
   try {
     await client.query('BEGIN');
     
-    const invoice_id = context.params.id;
 
     await client.query('DELETE FROM invoicedetail WHERE invoice_id = $1', [invoice_id]);
     
