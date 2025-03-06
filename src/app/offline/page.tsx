@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { WifiOff, RefreshCw } from 'lucide-react';
+import { WifiOff } from 'lucide-react';
+import { RefreshButton } from '@/components/refresh-button';
 
 export default function OfflinePage() {
   return (
@@ -16,17 +16,11 @@ export default function OfflinePage() {
           Please check your connection and try again.
         </p>
         <div className="flex justify-center space-x-4">
-          <Button
-            onClick={() => window.location.reload()}
-            className="flex items-center"
-          >
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
+          <RefreshButton />
           <Link href="/">
-            <Button variant="outline">
+            <button className="bg-transparent hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-300 rounded shadow">
               Go Home
-            </Button>
+            </button>
           </Link>
         </div>
       </div>

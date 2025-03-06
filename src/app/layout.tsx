@@ -19,27 +19,20 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Locksmith4U",
-  description: "A local locksmith service that serves all of the Las Vegas area.",
+  title: "InvoiceSync",
+  description: "An invoicing software that is specifically designed for locksmiths.",
   icons: {
     icon: '/favicon.ico',
     apple: '/icons/apple-touch-icon.png',
   },
-  manifest: '/manifest.json',
+  manifest: '/manifest.json'
+};
+
+export const viewport = {
   themeColor: '#004aff',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'Locksmith4U',
-  },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-  },
-  formatDetection: {
-    telephone: true,
-  },
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1
 };
 
 export default function RootLayout({
