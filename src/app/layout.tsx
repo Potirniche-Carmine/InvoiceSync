@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Header } from '@/components/header'
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   manifest: '/manifest.json'
 };
 
-export const viewport = {
+export const viewport:Viewport = {
   themeColor: '#004aff',
   width: 'device-width',
   initialScale: 1,
@@ -43,10 +43,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="application-name" content="Locksmith4U" />
+        <meta name="application-name" content="InvoiceSync" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Locksmith4U" />
+        <meta name="apple-mobile-web-app-title" content="InvoiceSync" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-TileColor" content="#004aff" />
