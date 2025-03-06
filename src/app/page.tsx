@@ -1,7 +1,7 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Turnstile } from "next-turnstile";
 import { AlertCircle } from "lucide-react";
 
@@ -13,9 +13,30 @@ export default function AdminLogin() {
   >("required");
   const formRef = useRef<HTMLFormElement>(null);
   const turnstileRef = useRef<string>();
+  const isUrlError = useRef<boolean>(false);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const errorParam = urlParams.get("error");
+    
+    if (errorParam) {
+      const decodedError = decodeURIComponent(errorParam);
+      setError(decodedError);
+      isUrlError.current = true; 
+    }
+  }, []);
+
+  const clearErrorParam = () => {
+    if (window.location.search.includes('error=')) {
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+      isUrlError.current = false; 
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    clearErrorParam();
     setError(null);
     setIsLoading(true);
 
@@ -45,8 +66,7 @@ export default function AdminLogin() {
       });
 
       if (!validationResponse.ok) {
-        setError("Security check failed. Please try again.");
-        setIsLoading(false);
+        window.location.href = `/?error=${encodeURIComponent("Security check failed. Please try again.")}`;
         return;
       }
 
@@ -57,15 +77,17 @@ export default function AdminLogin() {
       });
 
       if (result?.error) {
-        setError(result.error);
+        window.location.href = `/?error=${encodeURIComponent(result.error)}`;
+        return; 
       } else {
         window.location.href = "/dashboard";
       }
     } catch {
-      setError("An error occurred. Please try again.");
-    } finally {
-      setIsLoading(false);
+      window.location.href = `/?error=${encodeURIComponent("An error occurred. Please try again.")}`;
+      return; 
     }
+    
+    setIsLoading(false);
   };
 
   return (
@@ -83,6 +105,7 @@ export default function AdminLogin() {
               name="username"
               required
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+              onChange={clearErrorParam}
             />
           </div>
           <div>
@@ -95,6 +118,7 @@ export default function AdminLogin() {
               name="password"
               required
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+              onChange={clearErrorParam}
             />
           </div>
           <div className="flex justify-center">
@@ -103,21 +127,29 @@ export default function AdminLogin() {
               retry="auto"
               refreshExpired="auto"
               onError={() => {
-                setTurnstileStatus("error");
-                setError("Security check failed. Please try again.");
+                if (!isUrlError.current) { 
+                  setTurnstileStatus("error");
+                  setError("Security check failed. Please try again.");
+                }
               }}
               onExpire={() => {
-                setTurnstileStatus("expired");
-                setError("Security check expired. Please verify again.");
+                if (!isUrlError.current) { 
+                  setTurnstileStatus("expired");
+                  setError("Security check expired. Please verify again.");
+                }
               }}
               onLoad={() => {
                 setTurnstileStatus("required");
-                setError(null);
+                if (!isUrlError.current) { 
+                  setError(null);
+                }
               }}
               onVerify={(token) => {
                 setTurnstileStatus("success");
-                setError(null);
                 turnstileRef.current = token;
+                if (!isUrlError.current) {
+                  setError(null);
+                }
               }}
             />
           </div>
@@ -137,5 +169,4 @@ export default function AdminLogin() {
         </form>
       </div>
     </div>
-  );
-}
+  );}
