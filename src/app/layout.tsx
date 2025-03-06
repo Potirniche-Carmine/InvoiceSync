@@ -4,7 +4,6 @@ import "./globals.css";
 import { Header } from '@/components/header'
 import { Footer } from "@/components/footer";
 import { NetworkStatus } from '@/components/network-status';
-import { InstallPrompt } from '@/components/install-prompt';
 import Script from "next/script";
 
 const geistSans = localFont({
@@ -66,7 +65,6 @@ export default function RootLayout({
         </div>
         <Footer />
         <NetworkStatus />
-        <InstallPrompt />
         <Script src="/register-sw.js" strategy="lazyOnload" />
       </body>
     </html>
