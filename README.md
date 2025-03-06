@@ -2,19 +2,12 @@
 
 <div align="center">
   <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-  <!-- Rounded Document Icon -->
   <rect x="30" y="30" width="140" height="140" rx="20" ry="20" fill="none" stroke="#2A9D8F" stroke-width="4"/>
-  <!-- Folded Corner Detail -->
   <path d="M170 30 L170 50 L150 30 Z" fill="none" stroke="#2A9D8F" stroke-width="4"/>
-  
-  <!-- Sync Icon Overlay -->
   <g transform="translate(100,100)">
-    <!-- Outer circle for sync -->
     <circle cx="0" cy="0" r="30" fill="none" stroke="#264653" stroke-width="4"/>
-    <!-- First full arrow -->
     <path d="M -18 10 A 18 18 0 0 1 10 -18" fill="none" stroke="#264653" stroke-width="4"/>
     <polygon points="-21 13 -16 14 -16 5" fill="#264653"/>
-    <!-- Second full arrow -->
     <path d="M 18 -10 A 18 18 0 0 1 -10 18" fill="none" stroke="#264653" stroke-width="4"/>
     <polygon points="21 -13 16 -14 16 -5" fill="#264653"/>
   </g>
