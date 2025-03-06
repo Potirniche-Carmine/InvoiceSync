@@ -17,7 +17,7 @@ export default function InvoicesPage() {
           </p>
         </div>
         <div className="px-7">
-          <Link href="/admin/dashboard/create-invoice">
+          <Link href="/dashboard/create-invoice">
             <Button variant="default" className="bg-black hover:bg-black/70">
               <Plus className="h-4 w-4" />
               Add New Invoice

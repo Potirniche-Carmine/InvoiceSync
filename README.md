@@ -104,7 +104,35 @@ The application exposes several RESTful API endpoints:
 
 ## Screenshots
 
-*[Screenshots would be inserted here]*
+<div align="center">
+  <img src="public/loginElement.png" alt="Login page element to sign-in" width="350" height = "300"/>
+  <h4>The Sign-in</h4>
+</div>
+
+<div align="center">
+  <img src="public/dashboardPage.png" alt="Dashboard page with cards" width="750" height = "250"/>
+  <h4>The Dashboard</h4>
+</div>
+
+<div align="center">
+  <img src="public/createInvoice.png" alt="Create Invoice Page" width="350" height = "550"/>
+  <h4>Create Invoice Page</h4>
+</div>
+
+<div align="center">
+  <img src="public/customerPage.png" alt="Adding or updating customers page" width="200" height = "150"/>
+  <h4>Adding/Updating Customers Page</h4>
+</div>
+
+<div align="center">
+  <img src="public/invoiceList.png" alt="Invoices page" width="750" height = 250"/>
+  <h4>Invoice List Page</h4>
+</div>
+
+<div align="center">
+  <img src="public/exampleInvoice.png" alt="Example of an invoice PDF" width="450" height = "550"/>
+  <h4>Example of an Invoice</h4>
+</div>
 
 ## Future Enhancements
 
