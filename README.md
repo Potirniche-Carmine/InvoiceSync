@@ -118,9 +118,7 @@ The application exposes several RESTful API endpoints:
 
 ## Future Enhancements
 
-- **User Roles**: Additional role-based permissions
 - **Analytics Dashboard**: Business insights and reporting
-- **Client Portal**: Allow customers to view their quotes/invoices
 - **Mobile App**: Native mobile experience
 - **Inventory Management**: Track parts and materials
 
