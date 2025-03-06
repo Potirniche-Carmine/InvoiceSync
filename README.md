@@ -107,7 +107,7 @@ The application exposes several RESTful API endpoints:
 </div>
 
 <div align="center">
-  <img src="public/invoiceList.png" alt="Invoices page" width="750" height = 250"/>
+  <img src="public/invoiceList.png" alt="Invoices page" width="650" height = 250"/>
   <h4>Invoice List Page</h4>
 </div>
 
