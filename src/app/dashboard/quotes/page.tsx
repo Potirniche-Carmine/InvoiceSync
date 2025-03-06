@@ -17,7 +17,7 @@ export default function QuotesPage() {
           </p>
         </div>
         <div className="px-7">
-          <Link href="/admin/dashboard/create-quote">
+          <Link href="/dashboard/create-quote">
             <Button variant="default" className="bg-black hover:bg-black/70">
               <Plus className="h-4 w-4" />
               Add New Quote
