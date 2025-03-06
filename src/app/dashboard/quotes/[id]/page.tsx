@@ -1,14 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { notFound } from 'next/navigation';
+import CreateQuoteForm from '@/components/createQuoteForm';
 import { pool } from '@/lib/db';
+import type { DetailedQuote } from '@/lib/types';
 
-export async function GET(request: NextRequest) {
-  const url = new URL(request.url);
-  const quoteId = url.searchParams.get('quoteId');
-  
-  if (!quoteId) {
-    return NextResponse.json({ error: 'Quote ID is required' }, { status: 400 });
-  }
-  
+
+async function getQuote(id: string): Promise<DetailedQuote | null> {
   try {
     const query = `
       SELECT 
@@ -38,10 +34,10 @@ export async function GET(request: NextRequest) {
       GROUP BY q.quote_id, c.customer_id, c.customer_name, c.customer_address
     `;
     
-    const result = await pool.query(query, [quoteId]);
+    const result = await pool.query(query, [id]);
     
     if (result.rows.length === 0) {
-      return NextResponse.json({ error: 'Quote not found' }, { status: 404 });
+      return null;
     }
     
     const quote = result.rows[0];
@@ -49,12 +45,31 @@ export async function GET(request: NextRequest) {
       quote.services = [];
     }
     
-    return NextResponse.json({ quote });
+    return quote;
   } catch (err) {
-    console.error('Error fetching quote for invoice:', err);
-    return NextResponse.json(
-      { error: 'Failed to retrieve quote data', details: err instanceof Error ? err.message : 'Unknown error' },
-      { status: 500 }
-    );
+    console.error('Error fetching quote:', err);
+    return null;
   }
+}
+
+type EditQuotePageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function EditQuotePage({ params }: EditQuotePageProps) {
+  const awaitedParams = await params;
+  const id = awaitedParams.id;
+  
+  const quote = await getQuote(id);
+  
+  if (!quote) {
+    notFound();
+  }
+
+  return (
+    <CreateQuoteForm 
+      mode="edit" 
+      initialQuote={quote} 
+    />
+  );
 }

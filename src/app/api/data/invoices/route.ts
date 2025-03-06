@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { pool } from '@/app/lib/db';
-import type {Service} from '@/app/lib/types';
-import { TAX_RATE } from '@/app/lib/constants';
+import { pool } from '@/lib/db';
+import type {Service} from '@/lib/types';
+import { TAX_RATE } from '@/lib/constants';
  
 export async function GET() {
   try {
