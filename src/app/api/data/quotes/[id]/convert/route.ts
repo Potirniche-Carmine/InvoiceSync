@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { pool } from '@/app/lib/db';
+import { pool } from '@/lib/db';
 
 // Get detailed quote data
 async function getQuote(id: string) {

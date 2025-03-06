@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { pool } from '@/app/lib/db';
+import { pool } from '@/lib/db';
 import * as puppeteer from 'puppeteer';
-import { TAX_RATE } from '@/app/lib/constants';
+import { TAX_RATE } from '@/lib/constants';
 
 interface Detailedquote {
   quote_id: string;

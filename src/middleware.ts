@@ -20,7 +20,7 @@ export default async function middleware(req: NextRequest){
         }
       );
     }
-    return NextResponse.redirect(new URL("/admin", req.nextUrl));
+    return NextResponse.redirect(new URL("/", req.nextUrl));
   }
 
   const currentTime = Date.now();
@@ -30,7 +30,7 @@ export default async function middleware(req: NextRequest){
   const diffinHours = diffInMilliseconds / (1000 * 60 * 60);
 
   if (diffinHours > 24) {
-    return NextResponse.redirect(new URL("/admin", req.nextUrl));
+    return NextResponse.redirect(new URL("/", req.nextUrl));
   }
   return NextResponse.next();
 
@@ -38,8 +38,8 @@ export default async function middleware(req: NextRequest){
 
 export const config = {
   matcher: [
-    "/admin/dashboard",
-    "/admin/dashboard/:path*",
+    "/dashboard",
+    "/dashboard/:path*",
     "/api/data/:path*",
   ],
 };
