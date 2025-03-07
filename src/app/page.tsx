@@ -11,40 +11,12 @@ export default function AdminLogin() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [turnstileStatus, setTurnstileStatus] = useState<
-    "success" | "error" | "expired" | "required"
-  >("required");
+  const [turnstileStatus, setTurnstileStatus] = useState<"success" | "error" | "expired" | "required">("required");
   const formRef = useRef<HTMLFormElement>(null);
   const turnstileRef = useRef<string>();
   const isUrlError = useRef<boolean>(false);
 
-  useEffect(() => {
-    const clearCacheIfNeeded = async () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const errorParam = urlParams.get("error");
-      
-      if (errorParam && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        try {
-          const registrations = await navigator.serviceWorker.getRegistrations();
-          for (const registration of registrations) {
-            await registration.unregister();
-          }
-          
-          if ('caches' in window) {
-            const cacheKeys = await caches.keys();
-            await Promise.all(cacheKeys.map(key => caches.delete(key)));
-          }
-          
-          console.log('Service worker cache cleared due to auth error');
-        } catch (err) {
-          console.error('Failed to clear service worker cache:', err);
-        }
-      }
-    };
-    
-    clearCacheIfNeeded();
-  }, []);
-
+  // Redirect if already authenticated
   useEffect(() => {
     if (status === "authenticated" && session) {
       router.push("/dashboard");
@@ -93,6 +65,7 @@ export default function AdminLogin() {
     const token = turnstileRef.current;
 
     try {
+      // First validate the Turnstile token
       const validationResponse = await fetch("/api/auth/validate-turnstile", {
         method: "POST",
         headers: {
@@ -107,17 +80,21 @@ export default function AdminLogin() {
         return;
       }
 
+      // Then attempt to sign in using next-auth
       const result = await signIn("credentials", {
         username,
         password,
-        redirect: false,
+        redirect: false
       });
 
       if (result?.error) {
         setError(result.error);
         setIsLoading(false);
-      } else {
-        router.push("/dashboard");
+      } else if (result?.ok) {
+        // Important: Wait a moment before redirecting to ensure the session is stored
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 500);
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -126,6 +103,7 @@ export default function AdminLogin() {
     }
   };
 
+  // Show loading state while checking authentication
   if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -134,6 +112,7 @@ export default function AdminLogin() {
     );
   }
 
+  // If not authenticated, show login form
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md bg-white text-black rounded-lg shadow-md p-6">
