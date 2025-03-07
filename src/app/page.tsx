@@ -1,11 +1,14 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
 import { Turnstile } from "next-turnstile";
 import { AlertCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function AdminLogin() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [turnstileStatus, setTurnstileStatus] = useState<
@@ -14,6 +17,13 @@ export default function AdminLogin() {
   const formRef = useRef<HTMLFormElement>(null);
   const turnstileRef = useRef<string>();
   const isUrlError = useRef<boolean>(false);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (status === "authenticated" && session) {
+      router.push("/dashboard");
+    }
+  }, [status, session, router]);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -90,6 +100,16 @@ export default function AdminLogin() {
     setIsLoading(false);
   };
 
+  // Show loading state while checking authentication
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="animate-pulse text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  // If not authenticated, show login form
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md bg-white text-black rounded-lg shadow-md p-6">
@@ -169,4 +189,5 @@ export default function AdminLogin() {
         </form>
       </div>
     </div>
-  );}
+  );
+}
