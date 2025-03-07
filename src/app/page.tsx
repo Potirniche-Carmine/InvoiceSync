@@ -94,7 +94,7 @@ export default function AdminLogin() {
         window.location.href = `/?error=${encodeURIComponent(result.error)}`;
         return; 
       } else {
-        window.location.href = "/dashboard";
+        router.push("/dashboard");
       }
     } catch {
       window.location.href = `/?error=${encodeURIComponent("An error occurred. Please try again.")}`;
