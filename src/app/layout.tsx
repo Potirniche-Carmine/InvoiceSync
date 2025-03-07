@@ -6,6 +6,7 @@ import { Footer } from "@/components/footer";
 import { NetworkStatus } from '@/components/network-status';
 import Script from "next/script";
 import SessionCheck from "@/components/SessionCheck";
+import { SessionProvider } from "next-auth/react";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -60,6 +61,7 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/favicon.ico" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialised flex flex-col min-h-screen bg-white text-black`}>
+      <SessionProvider>
         <SessionCheck />
         <Header />
         <div className="flex-grow">
@@ -68,6 +70,7 @@ export default function RootLayout({
         <Footer />
         <NetworkStatus />
         <Script src="/register-sw.js" strategy="lazyOnload" />
+        </SessionProvider>
       </body>
     </html>
   );

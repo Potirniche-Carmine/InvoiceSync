@@ -1,16 +1,33 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
+'use client';
+
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import Card from '@/components/card';
 import {
   FilePlus,
   BookOpen,
   FilePlus2,
   UserRoundPlus,
-
 } from "lucide-react";
 
-export default async function DashboardPage() {
-  const session = await getServerSession(authOptions);
+export default function DashboardPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.replace('/');
+    } else if (status === 'authenticated') {
+      setIsLoading(false);
+    }
+  }, [status, router]);
+  
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading dashboard...</div>;
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center">
       <div className="w-full max-w-4xl mt-10">
@@ -47,4 +64,4 @@ export default async function DashboardPage() {
       </div>
     </div>
   );
-};
+}

@@ -1,27 +1,26 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { getSession } from 'next-auth/react';
+import { useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { usePathname, useRouter } from 'next/navigation';
 
 export default function SessionCheck() {
+  const { data: session, status } = useSession();
   const router = useRouter();
-  const [, setIsChecking] = useState(true);
-
+  const pathname = usePathname();
+  const isAuthPath = pathname === '/';
+  
   useEffect(() => {
-    async function checkSession() {
-      const session = await getSession();
-      
-      if (session) {
-        if (window.location.pathname === '/') {
-          router.replace('/dashboard');
-        }
-      }
-      setIsChecking(false);
+    if (status === 'loading') return;
+    
+    if (session && isAuthPath) {
+      router.replace('/dashboard');
     }
-
-    checkSession();
-  }, [router]);
+    
+    if (!session && !isAuthPath && !pathname.startsWith('/api')) {
+      router.replace('/');
+    }
+  }, [session, status, router, pathname, isAuthPath]);
 
   return null;
 }
