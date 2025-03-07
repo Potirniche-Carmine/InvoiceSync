@@ -1,26 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 export default function SessionCheck() {
   const { status } = useSession();
-  const router = useRouter();
   const pathname = usePathname();
-  const [, setIsChecking] = useState(true);
   
   useEffect(() => {
-    if (status === 'loading') return;
-    
     console.log('SessionCheck: Status:', status, 'Pathname:', pathname);
     
-    setIsChecking(false);
-    
+    // If authenticated and at the root path, force a direct navigation
     if (status === 'authenticated' && pathname === '/') {
-      router.push('/dashboard');
+      console.log('Redirecting to dashboard...');
+      window.location.href = '/dashboard';
     }
-  }, [status, pathname, router]);
+  }, [status, pathname]);
 
   return null;
 }
