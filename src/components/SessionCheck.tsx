@@ -11,7 +11,6 @@ export default function SessionCheck() {
   useEffect(() => {
     console.log('SessionCheck: Status:', status, 'Pathname:', pathname);
     
-    // If authenticated and at the root path, force a direct navigation
     if (status === 'authenticated' && pathname === '/') {
       console.log('Redirecting to dashboard...');
       window.location.href = '/dashboard';

@@ -1,35 +1,21 @@
 "use client";
 
-import { signIn, getSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
 import { Turnstile } from "next-turnstile";
 import { AlertCircle } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 export default function AdminLogin() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [turnstileStatus, setTurnstileStatus] = useState<
     "success" | "error" | "expired" | "required"
   >("required");
   const formRef = useRef<HTMLFormElement>(null);
   const turnstileRef = useRef<string>();
   const isUrlError = useRef<boolean>(false);
-  const router = useRouter();
 
   useEffect(() => {
-    const checkSession = async () => {
-      const session = await getSession();
-      if (session) {
-        router.replace("/dashboard");
-      } else {
-        setIsCheckingSession(false);
-      }
-    };
-    
-    checkSession();
-    
     const urlParams = new URLSearchParams(window.location.search);
     const errorParam = urlParams.get("error");
     
@@ -38,7 +24,7 @@ export default function AdminLogin() {
       setError(decodedError);
       isUrlError.current = true; 
     }
-  }, [router]);
+  }, []);
 
   const clearErrorParam = () => {
     if (window.location.search.includes('error=')) {
@@ -94,7 +80,7 @@ export default function AdminLogin() {
         window.location.href = `/?error=${encodeURIComponent(result.error)}`;
         return; 
       } else {
-        router.push("/dashboard");
+        window.location.href = "/dashboard";
       }
     } catch {
       window.location.href = `/?error=${encodeURIComponent("An error occurred. Please try again.")}`;
@@ -103,14 +89,6 @@ export default function AdminLogin() {
     
     setIsLoading(false);
   };
-
-  if (isCheckingSession) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-xl">Loading...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -191,5 +169,4 @@ export default function AdminLogin() {
         </form>
       </div>
     </div>
-  );
-}
+  );}

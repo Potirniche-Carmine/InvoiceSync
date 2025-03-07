@@ -5,8 +5,6 @@ import { Header } from '@/components/header'
 import { Footer } from "@/components/footer";
 import { NetworkStatus } from '@/components/network-status';
 import Script from "next/script";
-import Providers from "@/components/Providers";
-import SessionCheck from "@/components/SessionCheck";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -61,8 +59,6 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/favicon.ico" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialised flex flex-col min-h-screen bg-white text-black`}>
-        <Providers>
-          <SessionCheck />
           <Header />
           <div className="flex-grow">
             {children}
@@ -70,7 +66,6 @@ export default function RootLayout({
           <Footer />
           <NetworkStatus />
           <Script src="/register-sw.js" strategy="lazyOnload" />
-        </Providers>
       </body>
     </html>
   );
