@@ -5,8 +5,8 @@ import { Header } from '@/components/header'
 import { Footer } from "@/components/footer";
 import { NetworkStatus } from '@/components/network-status';
 import Script from "next/script";
+import Providers from "@/components/Providers";
 import SessionCheck from "@/components/SessionCheck";
-import { SessionProvider } from "next-auth/react";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   manifest: '/manifest.json'
 };
 
-export const viewport:Viewport = {
+export const viewport: Viewport = {
   themeColor: '#004aff',
   width: 'device-width',
   initialScale: 1,
@@ -61,16 +61,16 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/favicon.ico" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialised flex flex-col min-h-screen bg-white text-black`}>
-      <SessionProvider>
-        <SessionCheck />
-        <Header />
-        <div className="flex-grow">
-          {children}
-        </div>
-        <Footer />
-        <NetworkStatus />
-        <Script src="/register-sw.js" strategy="lazyOnload" />
-        </SessionProvider>
+        <Providers>
+          <SessionCheck />
+          <Header />
+          <div className="flex-grow">
+            {children}
+          </div>
+          <Footer />
+          <NetworkStatus />
+          <Script src="/register-sw.js" strategy="lazyOnload" />
+        </Providers>
       </body>
     </html>
   );
