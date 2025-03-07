@@ -14,6 +14,10 @@ export const authOptions: AuthOptions = {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  pages: {
+    signIn: "/",
+    error: "/?error=Error+occurred", 
+  },
   providers: [
     CredentialsProvider({
       name: "Admin Login",
@@ -40,7 +44,7 @@ export const authOptions: AuthOptions = {
 
           return {
             id: "1",
-            name: "Iulian"
+            name: "Admin"
           };
         } catch (error) {
           if (error instanceof Error && !error.message.includes("Invalid username/password")) {
