@@ -18,7 +18,33 @@ export default function AdminLogin() {
   const turnstileRef = useRef<string>();
   const isUrlError = useRef<boolean>(false);
 
-  // Redirect if already authenticated
+  useEffect(() => {
+    const clearCacheIfNeeded = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const errorParam = urlParams.get("error");
+      
+      if (errorParam && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        try {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          for (const registration of registrations) {
+            await registration.unregister();
+          }
+          
+          if ('caches' in window) {
+            const cacheKeys = await caches.keys();
+            await Promise.all(cacheKeys.map(key => caches.delete(key)));
+          }
+          
+          console.log('Service worker cache cleared due to auth error');
+        } catch (err) {
+          console.error('Failed to clear service worker cache:', err);
+        }
+      }
+    };
+    
+    clearCacheIfNeeded();
+  }, []);
+
   useEffect(() => {
     if (status === "authenticated" && session) {
       router.push("/dashboard");
@@ -76,7 +102,8 @@ export default function AdminLogin() {
       });
 
       if (!validationResponse.ok) {
-        window.location.href = `/?error=${encodeURIComponent("Security check failed. Please try again.")}`;
+        setError("Security check failed. Please try again.");
+        setIsLoading(false);
         return;
       }
 
@@ -87,20 +114,18 @@ export default function AdminLogin() {
       });
 
       if (result?.error) {
-        window.location.href = `/?error=${encodeURIComponent(result.error)}`;
-        return; 
+        setError(result.error);
+        setIsLoading(false);
       } else {
-        window.location.href = "/dashboard";
+        router.push("/dashboard");
       }
-    } catch {
-      window.location.href = `/?error=${encodeURIComponent("An error occurred. Please try again.")}`;
-      return; 
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("An error occurred. Please try again.");
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
-  // Show loading state while checking authentication
   if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -109,7 +134,6 @@ export default function AdminLogin() {
     );
   }
 
-  // If not authenticated, show login form
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md bg-white text-black rounded-lg shadow-md p-6">
