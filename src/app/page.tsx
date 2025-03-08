@@ -4,6 +4,8 @@ import { signIn } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
 import { Turnstile } from "next-turnstile";
 import { AlertCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function AdminLogin() {
   const [error, setError] = useState<string | null>(null);
@@ -11,9 +13,19 @@ export default function AdminLogin() {
   const [turnstileStatus, setTurnstileStatus] = useState<
     "success" | "error" | "expired" | "required"
   >("required");
+  const [turnstileKey, setTurnstileKey] = useState<number>(1);
   const formRef = useRef<HTMLFormElement>(null);
   const turnstileRef = useRef<string>();
   const isUrlError = useRef<boolean>(false);
+  
+  const { status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/dashboard");
+    }
+  }, [status, router]);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -23,6 +35,7 @@ export default function AdminLogin() {
       const decodedError = decodeURIComponent(errorParam);
       setError(decodedError);
       isUrlError.current = true; 
+      resetTurnstile(); 
     }
   }, []);
 
@@ -32,6 +45,12 @@ export default function AdminLogin() {
       window.history.replaceState({}, document.title, newUrl);
       isUrlError.current = false; 
     }
+  };
+
+  const resetTurnstile = () => {
+    setTurnstileKey(prev => prev + 1);
+    setTurnstileStatus("required");
+    turnstileRef.current = undefined;
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -66,7 +85,9 @@ export default function AdminLogin() {
       });
 
       if (!validationResponse.ok) {
-        window.location.href = `/?error=${encodeURIComponent("Security check failed. Please try again.")}`;
+        setError("Security check failed. Please try again.");
+        resetTurnstile(); 
+        setIsLoading(false);
         return;
       }
 
@@ -77,18 +98,38 @@ export default function AdminLogin() {
       });
 
       if (result?.error) {
-        window.location.href = `/?error=${encodeURIComponent(result.error)}`;
-        return; 
+        setError(result.error);
+        resetTurnstile(); 
       } else {
-        window.location.href = "/dashboard";
+        router.push("/dashboard");
       }
     } catch {
-      window.location.href = `/?error=${encodeURIComponent("An error occurred. Please try again.")}`;
-      return; 
+      setError("An error occurred. Please try again.");
+      resetTurnstile();
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
+
+  if (status === "authenticated") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          Redirecting to dashboard...
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          Loading...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -123,6 +164,7 @@ export default function AdminLogin() {
           </div>
           <div className="flex justify-center">
             <Turnstile
+              key={turnstileKey}
               siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
               retry="auto"
               refreshExpired="auto"
@@ -169,4 +211,5 @@ export default function AdminLogin() {
         </form>
       </div>
     </div>
-  );}
+  );
+}
