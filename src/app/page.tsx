@@ -8,7 +8,9 @@ import { AlertCircle } from "lucide-react";
 export default function AdminLogin() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [turnstileStatus, setTurnstileStatus] = useState<"success" | "error" | "expired" | "required">("required");
+  const [turnstileStatus, setTurnstileStatus] = useState<
+    "success" | "error" | "expired" | "required"
+  >("required");
   const formRef = useRef<HTMLFormElement>(null);
   const turnstileRef = useRef<string>();
   const isUrlError = useRef<boolean>(false);
@@ -55,7 +57,6 @@ export default function AdminLogin() {
     const token = turnstileRef.current;
 
     try {
-      // First validate the Turnstile token
       const validationResponse = await fetch("/api/auth/validate-turnstile", {
         method: "POST",
         headers: {
@@ -65,23 +66,28 @@ export default function AdminLogin() {
       });
 
       if (!validationResponse.ok) {
-        setError("Security check failed. Please try again.");
-        setIsLoading(false);
+        window.location.href = `/?error=${encodeURIComponent("Security check failed. Please try again.")}`;
         return;
       }
 
-      await signIn("credentials", {
+      const result = await signIn("credentials", {
         username,
         password,
-        callbackUrl: "/dashboard",
-        redirect: true
+        redirect: false,
       });
-      
-    } catch (error) {
-      console.error("Login error:", error);
-      setError("An error occurred. Please try again.");
-      setIsLoading(false);
+
+      if (result?.error) {
+        window.location.href = `/?error=${encodeURIComponent(result.error)}`;
+        return; 
+      } else {
+        window.location.href = "/dashboard";
+      }
+    } catch {
+      window.location.href = `/?error=${encodeURIComponent("An error occurred. Please try again.")}`;
+      return; 
     }
+    
+    setIsLoading(false);
   };
 
   return (
@@ -163,5 +169,4 @@ export default function AdminLogin() {
         </form>
       </div>
     </div>
-  );
-}
+  );}
