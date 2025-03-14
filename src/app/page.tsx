@@ -1,3 +1,4 @@
+// src/app/page.tsx
 "use client";
 
 import { signIn } from "next-auth/react";
@@ -20,12 +21,6 @@ export default function AdminLogin() {
   
   const { status } = useSession();
   const router = useRouter();
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      router.push("/dashboard");
-    }
-  }, [status, router]);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -110,26 +105,6 @@ export default function AdminLogin() {
       setIsLoading(false);
     }
   };
-
-  if (status === "authenticated") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          Redirecting to dashboard...
-        </div>
-      </div>
-    );
-  }
-
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          Loading...
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
