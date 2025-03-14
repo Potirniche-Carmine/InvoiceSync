@@ -1,4 +1,3 @@
-// src/app/page.tsx
 "use client";
 
 import { signIn } from "next-auth/react";
@@ -19,7 +18,7 @@ export default function AdminLogin() {
   const turnstileRef = useRef<string>();
   const isUrlError = useRef<boolean>(false);
   
-  const { status } = useSession();
+  const { } = useSession();
   const router = useRouter();
 
   useEffect(() => {
