@@ -4,8 +4,6 @@ import { signIn } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
 import { Turnstile } from "next-turnstile";
 import { AlertCircle } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 
 export default function AdminLogin() {
   const [error, setError] = useState<string | null>(null);
@@ -18,9 +16,6 @@ export default function AdminLogin() {
   const turnstileRef = useRef<string>();
   const isUrlError = useRef<boolean>(false);
   
-  const { } = useSession();
-  const router = useRouter();
-
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const errorParam = urlParams.get("error");
@@ -84,23 +79,14 @@ export default function AdminLogin() {
         setIsLoading(false);
         return;
       }
-
       const result = await signIn("credentials", {
         username,
         password,
-        redirect: false,
+        callbackUrl: "/dashboard",
       });
-
-      if (result?.error) {
-        setError(result.error);
-        resetTurnstile(); 
-      } else {
-        router.push("/dashboard");
-      }
     } catch {
       setError("An error occurred. Please try again.");
       resetTurnstile();
-    } finally {
       setIsLoading(false);
     }
   };
