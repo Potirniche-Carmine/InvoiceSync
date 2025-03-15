@@ -79,10 +79,11 @@ export default function AdminLogin() {
         setIsLoading(false);
         return;
       }
-      const result = await signIn("credentials", {
+      await signIn("credentials", {
         username,
         password,
         callbackUrl: "/dashboard",
+        redirect: true,
       });
     } catch {
       setError("An error occurred. Please try again.");
