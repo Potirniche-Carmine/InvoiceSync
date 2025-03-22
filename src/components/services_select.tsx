@@ -180,15 +180,15 @@ export default function ServiceSelect({
     onSelect(updatedService);
   };
 
-  // Handle price input change - now works with string to allow for better editing
-  const handlePriceInputChange = (value: string) => {
-    if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
-      setPriceInput(value);
-      
-      if (!editedService) return;
-      
-      // Convert to number for calculations, default to 0 if empty
-      const unitprice = value === '' ? 0 : parseFloat(value);
+  // Handle price input change
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    
+    setPriceInput(value);
+    
+    if (!editedService) return;
+    const unitprice = value ? parseFloat(value) : 0;
+    if (!isNaN(unitprice)) {
       const updatedService = {
         ...editedService,
         unitprice,
@@ -278,13 +278,17 @@ export default function ServiceSelect({
                 <div className="relative">
                   <span className="absolute left-3 top-2">$</span>
                   <input
-                    type="text"
+                    type="number"
+                    step="0.01"
+                    min="0"
                     className="w-full bg-white p-2 pl-6 border rounded"
                     value={priceInput}
-                    onChange={(e) => handlePriceInputChange(e.target.value)}
+                    onChange={handlePriceChange}
                     onBlur={() => {
-                      // On blur, format the price and update service
-                      const formattedPrice = priceInput === '' ? '0' : parseFloat(priceInput).toString();
+                      let formattedPrice = '0';
+                      if (priceInput && !isNaN(parseFloat(priceInput))) {
+                        formattedPrice = parseFloat(priceInput).toString();
+                      }
                       setPriceInput(formattedPrice);
                       handleUpdateService();
                     }}
