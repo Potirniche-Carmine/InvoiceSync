@@ -182,8 +182,7 @@ export default function ServiceSelect({
 
   // Handle price input change - now works with string to allow for better editing
   const handlePriceInputChange = (value: string) => {
-    // Allow for empty input or valid decimal numbers
-    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+    if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
       setPriceInput(value);
       
       if (!editedService) return;
