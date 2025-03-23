@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Service, InvoiceService } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Trash } from "lucide-react";
-import { TAX_RATE_DISPLAY } from "@/lib/constants";
+import { TAX_RATE_DISPLAY, TAX_RATE } from "@/lib/constants";  // Import both constants
 
 interface ServiceSelectProps {
   onSelect: (service: InvoiceService) => void;
@@ -13,11 +13,11 @@ interface ServiceSelectProps {
   showRemoveButton?: boolean;
 }
 
-export default function ServiceSelect({ 
-  onSelect, 
-  onRemove, 
-  initialService, 
-  showRemoveButton = false 
+export default function ServiceSelect({
+  onSelect,
+  onRemove,
+  initialService,
+  showRemoveButton = false
 }: ServiceSelectProps) {
   const [services, setServices] = useState<Service[]>([]);
   const [search, setSearch] = useState(initialService?.servicename || '');
@@ -29,13 +29,15 @@ export default function ServiceSelect({
   const [editedService, setEditedService] = useState<InvoiceService | null>(
     initialService ? { ...initialService, quantity: initialService.quantity || 1 } : null
   );
-  
-  // Use string for price input to avoid decimal/typing issues
+
   const [priceInput, setPriceInput] = useState(
     initialService?.unitprice ? initialService.unitprice.toString() : '0'
   );
 
-  // Fetch services on component mount
+  const [quantityInput, setQuantityInput] = useState(
+    initialService?.quantity ? initialService.quantity.toString() : '1'
+  );
+
   useEffect(() => {
     const fetchServices = async () => {
       try {
@@ -52,7 +54,6 @@ export default function ServiceSelect({
     fetchServices();
   }, []);
 
-  // Set initial service when provided
   useEffect(() => {
     if (initialService) {
       setSelectedService(initialService);
@@ -62,19 +63,30 @@ export default function ServiceSelect({
     }
   }, [initialService]);
 
-  // Calculate total price based on quantity and unit price
-  const calculateTotalPrice = (service: InvoiceService): number => {
+  const calculateSubtotal = (service: InvoiceService): number => {
     return (service.quantity || 1) * (service.unitprice || 0);
   };
 
-  // Handle service selection from dropdown
+  const calculateTaxAmount = (service: InvoiceService): number => {
+    if (!service.istaxed) return 0;
+    return calculateSubtotal(service) * TAX_RATE;
+  };
+
+  const calculateTotalPrice = (service: InvoiceService): number => {
+    const subtotal = calculateSubtotal(service);
+    const taxAmount = calculateTaxAmount(service);
+    return subtotal + taxAmount;
+  };
+
   const handleSelect = (service: Service) => {
     const invoiceService: InvoiceService = {
       ...service,
       quantity: 1,
-      totalprice: service.unitprice || 0
+      totalprice: service.istaxed ?
+        service.unitprice * (1 + TAX_RATE) :
+        service.unitprice
     };
-    
+
     setSelectedService(invoiceService);
     setEditedService(invoiceService);
     setSearch(service.servicename);
@@ -83,7 +95,6 @@ export default function ServiceSelect({
     onSelect(invoiceService);
   };
 
-  // Create a new service
   const handleCreateNewService = async () => {
     try {
       const response = await fetch('/api/data/services', {
@@ -125,7 +136,7 @@ export default function ServiceSelect({
   // Update the service details
   const handleUpdateService = async (serviceToUpdate = editedService) => {
     if (!serviceToUpdate || !selectedService?.service_id) return;
-  
+
     try {
       // Only update the service in the database if its properties (not quantity) change
       if (
@@ -145,7 +156,7 @@ export default function ServiceSelect({
             istaxed: Boolean(serviceToUpdate.istaxed)
           }),
         });
-      
+
         if (response.ok) {
           const { service: updatedService } = await response.json();
           setServices(services.map(service =>
@@ -156,7 +167,6 @@ export default function ServiceSelect({
         }
       }
 
-      // Always notify the parent component about the updated service
       onSelect({
         ...serviceToUpdate,
         totalprice: calculateTotalPrice(serviceToUpdate)
@@ -166,38 +176,65 @@ export default function ServiceSelect({
     }
   };
 
-  // Handle quantity change
-  const handleQuantityChange = (quantity: number) => {
+  const handleQuantityChange = (value: string) => {
+    setQuantityInput(value);
+
     if (!editedService) return;
-    
-    const updatedService = {
-      ...editedService,
-      quantity: Math.max(1, quantity), // Ensure quantity is at least 1
-      totalprice: Math.max(1, quantity) * editedService.unitprice
-    };
-    
-    setEditedService(updatedService);
-    onSelect(updatedService);
+
+    if (value && !isNaN(parseInt(value))) {
+      const quantity = parseInt(value);
+      const updatedService = {
+        ...editedService,
+        quantity: quantity,
+        totalprice: calculateTotalPrice({
+          ...editedService,
+          quantity: quantity
+        })
+      };
+
+      setEditedService(updatedService);
+      onSelect(updatedService);
+    }
   };
 
-  // Handle price input change
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    
+
     setPriceInput(value);
-    
+
     if (!editedService) return;
     const unitprice = value ? parseFloat(value) : 0;
     if (!isNaN(unitprice)) {
       const updatedService = {
         ...editedService,
         unitprice,
-        totalprice: (editedService.quantity || 1) * unitprice
+        totalprice: calculateTotalPrice({
+          ...editedService,
+          unitprice
+        })
       };
-      
+
       setEditedService(updatedService);
       onSelect(updatedService);
     }
+  };
+
+  // Handle tax checkbox change
+  const handleTaxChange = (checked: boolean) => {
+    if (!editedService) return;
+
+    const updatedService = {
+      ...editedService,
+      istaxed: checked,
+      totalprice: calculateTotalPrice({
+        ...editedService,
+        istaxed: checked
+      })
+    };
+
+    setEditedService(updatedService);
+    onSelect(updatedService);
+    handleUpdateService(updatedService);
   };
 
   const filteredServices = services.filter(service =>
@@ -250,9 +287,9 @@ export default function ServiceSelect({
           <div className="flex justify-between items-center">
             <h3 className="font-medium">{selectedService.servicename}</h3>
             {showRemoveButton && onRemove && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={onRemove}
                 className="text-red-500 hover:text-red-700 p-1"
               >
@@ -260,7 +297,7 @@ export default function ServiceSelect({
               </Button>
             )}
           </div>
-          
+
           <div className="space-y-2">
             <div className="grid grid-cols-2 gap-2">
               <div>
@@ -269,8 +306,17 @@ export default function ServiceSelect({
                   type="number"
                   min="1"
                   className="w-full bg-white p-2 border rounded"
-                  value={editedService?.quantity || 1}
-                  onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
+                  value={quantityInput}
+                  onChange={(e) => handleQuantityChange(e.target.value)}
+                  onBlur={() => {
+                    let validQuantity = '1';
+                    if (quantityInput && !isNaN(parseInt(quantityInput))) {
+                      const num = parseInt(quantityInput);
+                      validQuantity = Math.max(1, num).toString();
+                    }
+                    setQuantityInput(validQuantity);
+                    handleQuantityChange(validQuantity);
+                  }}
                 />
               </div>
               <div>
@@ -296,7 +342,7 @@ export default function ServiceSelect({
                 </div>
               </div>
             </div>
-            
+
             <div>
               <Label className="mb-1 block">Description</Label>
               <input
@@ -314,28 +360,34 @@ export default function ServiceSelect({
                 onBlur={() => handleUpdateService()}
               />
             </div>
-            
+
             <div className="flex justify-between items-center p-2 mt-2 bg-gray-50 rounded">
               <Label>Apply Tax ({TAX_RATE_DISPLAY})</Label>
               <Switch
                 id="Tax"
                 checked={Boolean(editedService?.istaxed)}
-                onCheckedChange={(checked) => {
-                  if (!editedService) return;
-                  const updatedService = {
-                    ...editedService,
-                    istaxed: checked
-                  };
-                  setEditedService(updatedService);
-                  onSelect(updatedService);
-                  handleUpdateService(updatedService);
-                }}
+                onCheckedChange={handleTaxChange}
               />
             </div>
-            
-            <div className="flex justify-between font-medium text-sm pt-2 border-t mt-2">
-              <span>Total:</span>
-              <span>${editedService ? calculateTotalPrice(editedService).toFixed(2) : '0.00'}</span>
+
+            {/* Updated Total display section to show tax breakdown */}
+            <div className="flex flex-col pt-2 border-t mt-2">
+              <div className="flex justify-between text-sm">
+                <span>Subtotal:</span>
+                <span>${editedService ? calculateSubtotal(editedService).toFixed(2) : '0.00'}</span>
+              </div>
+
+              {editedService?.istaxed && (
+                <div className="flex justify-between text-sm text-gray-500">
+                  <span>Tax ({TAX_RATE_DISPLAY}):</span>
+                  <span>${editedService ? calculateTaxAmount(editedService).toFixed(2) : '0.00'}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between font-medium text-sm mt-1">
+                <span>Total:</span>
+                <span>${editedService ? calculateTotalPrice(editedService).toFixed(2) : '0.00'}</span>
+              </div>
             </div>
           </div>
         </div>
