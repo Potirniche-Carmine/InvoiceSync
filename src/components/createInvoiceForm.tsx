@@ -301,14 +301,12 @@ export default function CreateInvoiceForm({
                   placeholder="e.g. 1HGCM82633A123456"
                   maxLength={17}
                 />
-                {mode === 'create' && (
                   <VinDecoder
                     ref={vinDecoderRef}
                     vin={vin}
                     onVehicleInfoAdded={handleVehicleInfoAdded}
                     disabled={isSubmitting}
                   />
-                )}
               </div>
             </div>
 
