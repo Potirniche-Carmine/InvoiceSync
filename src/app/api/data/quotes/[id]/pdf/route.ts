@@ -524,25 +524,27 @@ function generateHtml(quote: Detailedquote): string {
     <p>${description}</p>
   </div>`;
   }
+  if (quote.vin && quote.vin.trim() !== '') {
+    html += `
+    <div class="vehicle-info">
+      <h3 class="section-title">Vehicle Information:</h3>
+      <dl class="vehicle-details">
+        <dt>VIN #:</dt>
+        <dd>${quote.vin || 'N/A'}</dd>
+        
+        <dt>Last 8:</dt>
+        <dd>${vinLast8 || 'N/A'}</dd>
+        
+        <dt>Make/Model:</dt>
+        <dd>${vehicleMakeModel || 'N/A'}</dd>
+        
+        <dt>Year:</dt>
+        <dd>${vehicleYear || 'N/A'}</dd>
+      </dl>
+    </div>`;
+  }
 
   html += `
-  <div class="vehicle-info">
-    <h3 class="section-title">Vehicle Information:</h3>
-    <dl class="vehicle-details">
-      <dt>VIN #:</dt>
-      <dd>${quote.vin || 'N/A'}</dd>
-      
-      <dt>Last 8:</dt>
-      <dd>${vinLast8 || 'N/A'}</dd>
-      
-      <dt>Make/Model:</dt>
-      <dd>${vehicleMakeModel || 'N/A'}</dd>
-      
-      <dt>Year:</dt>
-      <dd>${vehicleYear || 'N/A'}</dd>
-    </dl>
-  </div>
-  
   <div class="signature-section">
     <div>
       <div class="signature-line">
