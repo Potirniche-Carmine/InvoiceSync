@@ -187,7 +187,7 @@ function generateHtml(quote: Detailedquote): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>quote ${quote.quote_id}</title>
+  <title>Quote ${quote.quote_id}</title>
   <style>
     :root {
       --primary-color: #0055a4;
@@ -469,6 +469,7 @@ function generateHtml(quote: Detailedquote): string {
     </div>
   </div>`;
   }
+
   html += `
   <table>
     <thead>
@@ -484,16 +485,19 @@ function generateHtml(quote: Detailedquote): string {
 
   items.forEach(item => {
     html += `
-      <tr>
-        <td>${item.quantity}</td>
-        <td>${item.description}</td>
-        <td>$${item.unitPrice}</td>
-        <td class="tax-cell">${item.taxRate}</td>
-        <td class="amount-cell">$${item.total}</td>
-      </tr>`;
+    <tr>
+      <td>${item.quantity}</td>
+      <td>${item.description}</td>
+      <td>$${item.unitPrice}</td>
+      <td class="tax-cell">${item.taxRate}</td>
+      <td class="amount-cell">$${item.total}</td>
+    </tr>`;
   });
 
   html += `
+    </tbody>
+  </table>
+
 <div class="total-section">
   <div class="total-row">
     <span>Subtotal:</span>
