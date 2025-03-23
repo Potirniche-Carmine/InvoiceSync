@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import * as puppeteer from 'puppeteer';
-import { TAX_RATE } from '@/lib/constants';
+import { TAX_RATE, TAX_RATE_DISPLAY } from '@/lib/constants';
 
 interface DetailedInvoice {
   invoice_id: string;
@@ -153,7 +153,7 @@ function generateHtml(invoice: DetailedInvoice): string {
   
   // Format items for the invoice
   const items = invoice.services.map(service => {
-    const taxRate = service.istaxed ? (TAX_RATE * 100).toFixed(2) : '0.00';
+    const taxRate = service.istaxed ? TAX_RATE_DISPLAY : '0%';
     const unitPrice = service.unitprice;
     const quantity = service.quantity;
     const subtotal = unitPrice * quantity;
@@ -488,7 +488,7 @@ if (showStatusBanner) {
         <td>${item.quantity}</td>
         <td>${item.description}</td>
         <td>$${item.unitPrice}</td>
-        <td class="tax-cell">${item.taxRate}%</td>
+        <td class="tax-cell">${item.taxRate}</td>
         <td class="amount-cell">$${item.total}</td>
       </tr>`;
   });
