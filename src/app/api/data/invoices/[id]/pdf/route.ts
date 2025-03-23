@@ -154,12 +154,18 @@ function generateHtml(invoice: DetailedInvoice): string {
   // Format items for the invoice
   const items = invoice.services.map(service => {
     const taxRate = service.istaxed ? (TAX_RATE * 100).toFixed(2) : '0.00';
+    const unitPrice = service.unitprice;
+    const quantity = service.quantity;
+    const subtotal = unitPrice * quantity;
+    const taxAmount = service.istaxed ? subtotal * TAX_RATE : 0;
+    const totalWithTax = subtotal + taxAmount;
+    
     return {
-      quantity: service.quantity,
+      quantity: quantity,
       description: service.servicename + (service.description ? ` - ${service.description}` : ''),
-      unitPrice: formatCurrency(service.unitprice),
+      unitPrice: formatCurrency(unitPrice),
       taxRate: taxRate,
-      total: formatCurrency(service.totalprice)
+      total: formatCurrency(totalWithTax)
     };
   });
 
