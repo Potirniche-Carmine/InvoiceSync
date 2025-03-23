@@ -1,6 +1,5 @@
 import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcrypt";
 
 declare module "next-auth" {
   interface Session {
@@ -12,11 +11,7 @@ export const authOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
-  pages: {
-    signIn: "/",
-    error: "/?error=Error+occurred", 
+    maxAge: 30 * 24 * 60 * 60, 
   },
   providers: [
     CredentialsProvider({
@@ -31,20 +26,17 @@ export const authOptions: AuthOptions = {
             throw new Error("Invalid username/password. Please try again");
           }
 
-          const encodedHash = process.env.ADMIN_PASSWORD_HASH;
-          if (!encodedHash || credentials.username.toLowerCase() !== process.env.ADMIN_USERNAME?.toLowerCase()) {
+          if (credentials.username !== process.env.ADMIN_USERNAME) {
             throw new Error("Invalid username/password. Please try again");
           }
-          const decodedHash = Buffer.from(encodedHash, 'base64').toString();
-          const isValid = await bcrypt.compare(credentials.password, decodedHash);
 
-          if (!isValid) {
+          if (credentials.password !== process.env.ADMIN_PASSWORD_HASH) {
             throw new Error("Invalid username/password. Please try again");
           }
 
           return {
             id: "1",
-            name: "Admin"
+            name: "Iulian"
           };
         } catch (error) {
           if (error instanceof Error && !error.message.includes("Invalid username/password")) {

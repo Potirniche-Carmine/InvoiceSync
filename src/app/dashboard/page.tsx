@@ -6,7 +6,7 @@ import {
   BookOpen,
   FilePlus2,
   UserRoundPlus,
-
+  BarChart3,
 } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -40,11 +40,16 @@ export default async function DashboardPage() {
           />
           <Card
             title="Add New Customer"
-            icon={<UserRoundPlus color="#00ff11 "/>}
+            icon={<UserRoundPlus color="#00ff11"/>}
             redirectTo="/dashboard/add-customer"
+          />
+          <Card
+            title="Payments/Taxes"
+            icon={<BarChart3 color="#00c8ff"/>}
+            redirectTo="/dashboard/financial-summary"
           />
         </div>
       </div>
     </div>
   );
-};
+}
