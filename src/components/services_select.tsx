@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Service, InvoiceService } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Trash } from "lucide-react";
-import { TAX_RATE_DISPLAY, TAX_RATE } from "@/lib/constants";  // Import both constants
+import { TAX_RATE_DISPLAY, TAX_RATE } from "@/lib/constants";
 
 interface ServiceSelectProps {
   onSelect: (service: InvoiceService) => void;
@@ -107,6 +107,7 @@ export default function ServiceSelect({
           description: '',
           unitprice: 0,
           istaxed: false,
+          isparts: false, // Add the isparts field with default false
         }),
       });
 
@@ -118,6 +119,7 @@ export default function ServiceSelect({
       const formattedService: InvoiceService = {
         ...newService,
         istaxed: Boolean(newService.istaxed),
+        isparts: Boolean(newService.isparts), // Ensure isparts is a boolean
         quantity: 1,
         totalprice: newService.unitprice || 0
       };
@@ -142,7 +144,8 @@ export default function ServiceSelect({
       if (
         serviceToUpdate.description !== selectedService.description ||
         serviceToUpdate.unitprice !== selectedService.unitprice ||
-        serviceToUpdate.istaxed !== selectedService.istaxed
+        serviceToUpdate.istaxed !== selectedService.istaxed ||
+        serviceToUpdate.isparts !== selectedService.isparts // Add isparts to the comparison
       ) {
         const response = await fetch('/api/data/services', {
           method: 'PUT',
@@ -153,7 +156,8 @@ export default function ServiceSelect({
             service_id: selectedService.service_id,
             description: serviceToUpdate.description,
             unitprice: serviceToUpdate.unitprice,
-            istaxed: Boolean(serviceToUpdate.istaxed)
+            istaxed: Boolean(serviceToUpdate.istaxed),
+            isparts: Boolean(serviceToUpdate.isparts) // Add isparts to the update
           }),
         });
 
@@ -161,7 +165,11 @@ export default function ServiceSelect({
           const { service: updatedService } = await response.json();
           setServices(services.map(service =>
             service.service_id === selectedService.service_id
-              ? { ...updatedService, istaxed: Boolean(updatedService.istaxed) }
+              ? { 
+                  ...updatedService, 
+                  istaxed: Boolean(updatedService.istaxed),
+                  isparts: Boolean(updatedService.isparts) // Ensure isparts is a boolean
+                }
               : service
           ));
         }
@@ -229,6 +237,23 @@ export default function ServiceSelect({
       totalprice: calculateTotalPrice({
         ...editedService,
         istaxed: checked
+      })
+    };
+
+    setEditedService(updatedService);
+    onSelect(updatedService);
+    handleUpdateService(updatedService);
+  };
+
+  const handlePartsChange = (checked: boolean) => {
+    if (!editedService) return;
+
+    const updatedService = {
+      ...editedService,
+      isparts: checked,
+      totalprice: calculateTotalPrice({
+        ...editedService,
+        isparts: checked
       })
     };
 
@@ -370,7 +395,15 @@ export default function ServiceSelect({
               />
             </div>
 
-            {/* Updated Total display section to show tax breakdown */}
+            <div className="flex justify-between items-center p-2 mt-2 bg-gray-50 rounded">
+              <Label>Is this parts?</Label>
+              <Switch
+                id="Parts"
+                checked={Boolean(editedService?.isparts)}
+                onCheckedChange={handlePartsChange}
+              />
+            </div>
+
             <div className="flex flex-col pt-2 border-t mt-2">
               <div className="flex justify-between text-sm">
                 <span>Subtotal:</span>

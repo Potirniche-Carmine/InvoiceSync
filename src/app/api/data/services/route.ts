@@ -4,23 +4,25 @@ import { pool } from "@/lib/db";
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { servicename, description, unitprice, istaxed } = body;
+        const { servicename, description, unitprice, istaxed, isparts } = body;
 
         const query = `
             INSERT INTO services (
                 servicename, 
                 description, 
                 unitprice, 
-                istaxed
+                istaxed,
+                isparts
             )
-            VALUES ($1, $2, $3, COALESCE($4, false))
+            VALUES ($1, $2, $3, COALESCE($4, false), COALESCE($5, false))
             RETURNING *
         `;
         const values = [
             servicename, 
             description, 
             unitprice, 
-            istaxed
+            istaxed,
+            isparts
         ];
 
         const result = await pool.query(query, values);
@@ -39,7 +41,8 @@ export async function GET() {
                 servicename, 
                 description, 
                 unitprice, 
-                COALESCE(istaxed, false) as istaxed
+                COALESCE(istaxed, false) as istaxed,
+                COALESCE(isparts, false) as isparts
             FROM services
             ORDER BY servicename
         `;
@@ -55,21 +58,23 @@ export async function GET() {
 export async function PUT(request: Request) {
     try {
         const body = await request.json();
-        const { service_id, description, unitprice, istaxed } = body;
+        const { service_id, description, unitprice, istaxed, isparts } = body;
 
         const query = `
             UPDATE services
             SET 
                 description = $1, 
                 unitprice = $2, 
-                istaxed = COALESCE($3, false)
-            WHERE service_id = $4
+                istaxed = COALESCE($3, false),
+                isparts = COALESCE($4, false)
+            WHERE service_id = $5
             RETURNING *
         `;
         const values = [
             description, 
             unitprice, 
-            istaxed, 
+            istaxed,
+            isparts,
             service_id
         ];
 
