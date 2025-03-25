@@ -13,13 +13,13 @@ export async function GET(request: NextRequest) {
     let dateFilter = '';
     
     if (startDate && endDate) {
-      dateFilter = 'AND date BETWEEN $1 AND $2';
+      dateFilter = 'AND i.date BETWEEN $1 AND $2';
       params.push(new Date(startDate), new Date(endDate));
     } else if (startDate) {
-      dateFilter = 'AND date >= $1';
+      dateFilter = 'AND i.date >= $1';
       params.push(new Date(startDate));
     } else if (endDate) {
-      dateFilter = 'AND date <= $1';
+      dateFilter = 'AND i.date <= $1';
       params.push(new Date(endDate));
     }
     
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
         SUM(tax_total) as total_tax,
         SUM(totalamount) as total_amount,
         COUNT(*) as invoice_count
-      FROM invoices
+      FROM invoices i
       WHERE 1=1 ${dateFilter}
     `;
     
@@ -36,12 +36,23 @@ export async function GET(request: NextRequest) {
       SELECT 
         SUM(totalamount) as unpaid_total,
         COUNT(*) as unpaid_count
-      FROM invoices
+      FROM invoices i
       WHERE status IN ('pending', 'overdue') ${dateFilter}
+    `;
+    
+    // New query to calculate parts total
+    const partsQuery = `
+      SELECT 
+        SUM(id.totalprice) as parts_total
+      FROM invoices i
+      JOIN invoicedetail id ON i.invoice_id = id.invoice_id
+      JOIN services s ON id.service_id = s.service_id
+      WHERE s.isparts = true ${dateFilter}
     `;
     
     const totalsResult = await client.query(totalsQuery, params);
     const unpaidResult = await client.query(unpaidQuery, params);
+    const partsResult = await client.query(partsQuery, params);
     
     return NextResponse.json({
       summary: {
@@ -49,7 +60,8 @@ export async function GET(request: NextRequest) {
         totalAmount: totalsResult.rows[0].total_amount || 0,
         invoiceCount: totalsResult.rows[0].invoice_count || 0,
         unpaidTotal: unpaidResult.rows[0].unpaid_total || 0,
-        unpaidCount: unpaidResult.rows[0].unpaid_count || 0
+        unpaidCount: unpaidResult.rows[0].unpaid_count || 0,
+        partsTotal: partsResult.rows[0].parts_total || 0 // Add parts total to the summary
       }
     });
     

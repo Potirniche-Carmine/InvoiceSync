@@ -122,7 +122,8 @@ export default function CreateInvoiceForm({
       unitprice: 0,
       istaxed: false,
       quantity: 1,
-      totalprice: 0
+      totalprice: 0,
+      isparts: false,
     }]);
   };
 
