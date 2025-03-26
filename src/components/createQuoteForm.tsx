@@ -45,7 +45,13 @@ export default function CreateQuoteForm({
   const [comments, setComments] = useState(initialQuote?.private_comments || '');
   const [vin, setVIN] = useState(initialQuote?.vin || '');
   const [services, setServices] = useState<InvoiceService[]>(
-    initialQuote?.services || []
+    initialQuote?.services 
+      ? initialQuote.services.map(service => ({
+          ...service,
+          service_id: Number(service.service_id), // Ensure service_id is a number
+          ispart: service.isparts || false // Convert isparts to ispart property
+        }))
+      : []
   );
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
