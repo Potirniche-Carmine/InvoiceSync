@@ -45,8 +45,14 @@ export default function CreateInvoiceForm({
   const [comments, setComments] = useState(initialInvoice?.private_comments || '');
   const [vin, setVIN] = useState(initialInvoice?.vin || '');
   const [services, setServices] = useState<InvoiceService[]>(
-    initialInvoice?.services || []
+    initialInvoice?.services?.map(service => ({
+      ...service,
+      istaxed: Boolean(service.istaxed),
+      isparts: Boolean(service.isparts) 
+    })) || []
   );
+  
+  
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -335,13 +341,13 @@ export default function CreateInvoiceForm({
             </div>
 
             <div>
-              <label className="block mb-1 font-medium">Job Description</label>
+              <label className="block mb-1 font-medium">Comments: </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="w-full p-2 border rounded"
                 rows={3}
-                placeholder="Enter job description here (visible to customer)"
+                placeholder="Enter comments here (visible to customer)"
               />
             </div>
           </CardContent>
