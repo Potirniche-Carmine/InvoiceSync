@@ -121,34 +121,24 @@ function generateHtml(invoice: DetailedInvoice): string {
   let description = invoice.description || '';
   const po_number = invoice.po_number;
   
-  // Try to extract vehicle info from description
-  const vehicleInfoRegex = /------------------------------\s*(.*?)\s*\nLast 8#:/;
+  const vehicleInfoRegex = /-----+\s*([^]*?)(?:Last 8#:|$)/;
   const match = description.match(vehicleInfoRegex);
   
   if (match && match[1]) {
     const vehicleInfo = match[1].trim();
-    const parts = vehicleInfo.split(' ');
     
-    // If we have at least 3 parts (Year Make Model)
-    if (parts.length >= 3) {
-      // Assume first part with 4 digits is year
-      const yearMatch = parts.find(part => /^\d{4}$/.test(part));
-      if (yearMatch) {
-        vehicleYear = yearMatch;
-        // Remove year from parts to get make/model
-        const makeModelParts = parts.filter(part => part !== yearMatch);
-        vehicleMakeModel = makeModelParts.join(' ');
-      } else {
-        // If no year found, just use everything as make/model
-        vehicleMakeModel = vehicleInfo;
-      }
+    const carInfoRegex = /([A-Z]+)\s+(\d{4})\s+(.*)/;
+    const carMatch = vehicleInfo.match(carInfoRegex);
+    
+    if (carMatch) {
+      const [_, make, year, model] = carMatch;
+      vehicleYear = year;
+      vehicleMakeModel = `${make} ${model}`;
     } else {
-      // Less than 3 parts, just use as is
       vehicleMakeModel = vehicleInfo;
     }
     
-    // Remove the vehicle info section from description for the PDF
-    description = description.replace(/------------------------------[\s\S]*?Last 8#:[^\n]*(\n|$)/, '').trim();
+    description = description.replace(/-----+[^]*?(?:Last 8#:[^\n]*(?:\n|$)|$)/, '').trim();
   }
   
   // Format items for the invoice
