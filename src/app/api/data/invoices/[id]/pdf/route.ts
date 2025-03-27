@@ -115,7 +115,6 @@ function generateHtml(invoice: DetailedInvoice): string {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  // Extract vehicle information from description if available
   let vehicleYear = '';
   let vehicleMakeModel = '';
   let description = invoice.description || '';
@@ -131,7 +130,7 @@ function generateHtml(invoice: DetailedInvoice): string {
     const carMatch = vehicleInfo.match(carInfoRegex);
     
     if (carMatch) {
-      const [_, make, year, model] = carMatch;
+      const [, make, year, model] = carMatch;
       vehicleYear = year;
       vehicleMakeModel = `${make} ${model}`;
     } else {
