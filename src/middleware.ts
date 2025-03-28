@@ -8,7 +8,6 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   
   const token = await getToken({ req, secret });
-  
 
   if (pathname.startsWith('/api/data/') && !token) {
     return new NextResponse(
@@ -32,7 +31,7 @@ export async function middleware(req: NextRequest) {
     const currentTime = Date.now();
     const loginTime = token.loginTimeStamp as number;
     
-    if (!loginTime || (currentTime - loginTime) / (1000 * 60 * 60) <= 24) {
+    if (!loginTime || (currentTime - loginTime) / (1000 * 60 * 60) <= 168) {
       const url = new URL('/dashboard', req.url);
       return NextResponse.redirect(url);
     }
