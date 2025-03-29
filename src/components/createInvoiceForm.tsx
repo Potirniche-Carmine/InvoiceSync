@@ -47,8 +47,7 @@ export default function CreateInvoiceForm({
   const [services, setServices] = useState<InvoiceService[]>(
     initialInvoice?.services?.map(service => ({
       ...service,
-      istaxed: Boolean(service.istaxed),
-      isparts: Boolean(service.isparts) 
+      istaxed: Boolean(service.istaxed)
     })) || []
   );
   
@@ -128,8 +127,7 @@ export default function CreateInvoiceForm({
       unitprice: 0,
       istaxed: false,
       quantity: 1,
-      totalprice: 0,
-      isparts: false,
+      totalprice: 0
     }]);
   };
 

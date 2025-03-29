@@ -25,7 +25,6 @@ export interface Service {
   description: string;
   unitprice: number;
   istaxed: boolean;
-  isparts: boolean;
   quantity?: number; 
 }
 

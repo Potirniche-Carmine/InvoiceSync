@@ -4,25 +4,23 @@ import { pool } from "@/lib/db";
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { servicename, description, unitprice, istaxed, isparts } = body;
+        const { servicename, description, unitprice, istaxed} = body;
 
         const query = `
             INSERT INTO services (
                 servicename, 
                 description, 
                 unitprice, 
-                istaxed,
-                isparts
+                istaxed
             )
-            VALUES ($1, $2, $3, COALESCE($4, false), COALESCE($5, false))
+            VALUES ($1, $2, $3, COALESCE($4, false))
             RETURNING *
         `;
         const values = [
             servicename, 
             description, 
             unitprice, 
-            istaxed,
-            isparts
+            istaxed
         ];
 
         const result = await pool.query(query, values);
@@ -41,8 +39,7 @@ export async function GET() {
                 servicename, 
                 description, 
                 unitprice, 
-                COALESCE(istaxed, false) as istaxed,
-                COALESCE(isparts, false) as isparts
+                COALESCE(istaxed, false) as istaxed
             FROM services
             ORDER BY servicename
         `;
@@ -58,7 +55,7 @@ export async function GET() {
 export async function PUT(request: Request) {
     try {
         const body = await request.json();
-        const { service_id, description, unitprice, istaxed, isparts } = body;
+        const { service_id, description, unitprice, istaxed } = body;
 
         const query = `
             UPDATE services
@@ -66,7 +63,6 @@ export async function PUT(request: Request) {
                 description = $1, 
                 unitprice = $2, 
                 istaxed = COALESCE($3, false),
-                isparts = COALESCE($4, false)
             WHERE service_id = $5
             RETURNING *
         `;
@@ -74,7 +70,6 @@ export async function PUT(request: Request) {
             description, 
             unitprice, 
             istaxed,
-            isparts,
             service_id
         ];
 

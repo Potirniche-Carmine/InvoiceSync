@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { DatePicker } from '@/components/datepicker';
 import { DateRange } from 'react-day-picker';
 import { Card, CardContent } from '@/components/ui/card';
-import { DollarSign, Receipt, AlertTriangle, Cog, RefreshCw } from 'lucide-react';
+import { DollarSign, Receipt, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface FinancialSummary {
@@ -13,7 +13,6 @@ interface FinancialSummary {
   invoiceCount: number;
   unpaidTotal: number;
   unpaidCount: number;
-  partsTotal: number; // New field for parts total
 }
 
 export default function FinancialSummary() {
@@ -135,26 +134,6 @@ export default function FinancialSummary() {
             </div>
             <div className="p-2 bg-amber-100 rounded-full">
               <AlertTriangle className="h-6 w-6 text-amber-700" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* New Parts Total Card - Replaced Collection Rate */}
-        <Card>
-          <CardContent className="flex flex-row items-center justify-between pt-6">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Parts Total</p>
-              <h3 className="text-2xl font-bold">
-                {isLoading ? '...' : formatCurrency(summary?.partsTotal)}
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1">
-                {summary?.totalAmount && summary?.partsTotal && summary.totalAmount > 0
-                  ? `${((summary.partsTotal / summary.totalAmount) * 100).toFixed(2)}% of sales`
-                  : '0.00% of sales'}
-              </p>
-            </div>
-            <div className="p-2 bg-purple-100 rounded-full">
-              <Cog className="h-6 w-6 text-purple-700" />
             </div>
           </CardContent>
         </Card>

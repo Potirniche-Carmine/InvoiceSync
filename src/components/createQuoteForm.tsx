@@ -48,8 +48,7 @@ export default function CreateQuoteForm({
     initialQuote?.services 
       ? initialQuote.services.map(service => ({
           ...service,
-          service_id: Number(service.service_id), // Ensure service_id is a number
-          ispart: service.isparts || false // Convert isparts to ispart property
+          service_id: Number(service.service_id)
         }))
       : []
   );
@@ -83,8 +82,7 @@ export default function CreateQuoteForm({
       unitprice: 0,
       istaxed: false,
       quantity: 1,
-      totalprice: 0,
-      isparts: false,
+      totalprice: 0
     }]);
   };
 
