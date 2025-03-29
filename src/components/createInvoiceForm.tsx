@@ -36,18 +36,26 @@ export default function CreateInvoiceForm({
   );
   const [PO, setPO] = useState(initialInvoice?.po_number || '');
   const [date, setDate] = useState<DateRange | undefined>(() => {
-    if (!initialInvoice) return undefined;
-
-    try {
-      return {
-        from: initialInvoice.date ? new Date(initialInvoice.date) : undefined,
-        to: initialInvoice.duedate ? new Date(initialInvoice.duedate) : undefined
-      };
-    } catch (e) {
-      console.error("Error parsing dates:", e);
+    if (!initialInvoice || (!initialInvoice.date && !initialInvoice.duedate)) {
       return undefined;
     }
+    
+    return {
+      from: initialInvoice.date ? adjustDateForTimezone(initialInvoice.date) : undefined,
+      to: initialInvoice.duedate ? adjustDateForTimezone(initialInvoice.duedate) : undefined
+    };
   });
+  
+  function adjustDateForTimezone(dateString: string) {
+    const parts = dateString.split('-');
+    if (parts.length !== 3) return new Date(); // Fallback
+    
+    return new Date(
+      parseInt(parts[0]), 
+      parseInt(parts[1]) - 1, 
+      parseInt(parts[2])
+    );
+  }
   const [description, setDescription] = useState(initialInvoice?.description || '');
   const [comments, setComments] = useState(initialInvoice?.private_comments || '');
   const [vin, setVIN] = useState(initialInvoice?.vin || '');
@@ -179,6 +187,16 @@ export default function CreateInvoiceForm({
       s.servicename && s.service_id && s.quantity > 0
     );
 
+    const formatDateForSubmission = (date: Date | undefined) => {
+      if (!date) return undefined;
+      
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      
+      return `${year}-${month}-${day}`;
+    };
+
     if (validServices.length === 0) {
       setError('At least one valid service must be selected');
       setIsSubmitting(false);
@@ -192,8 +210,8 @@ export default function CreateInvoiceForm({
         description,
         comments,
         vin,
-        startDate: date?.from ? date.from.toISOString().split('T')[0] : undefined,
-        dueDate: date?.to ? date.to.toISOString().split('T')[0] : undefined,
+        startDate: date?.from ? formatDateForSubmission(date.from) : undefined,
+        dueDate: date?.to ? formatDateForSubmission(date.to) : undefined,
         services: validServices,
       };
 

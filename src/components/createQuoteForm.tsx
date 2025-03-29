@@ -33,19 +33,25 @@ export default function CreateQuoteForm({
   );
   const [PO, setPO] = useState(initialQuote?.po_number || '');
   
-  // For quotes, we only need a single date (not a range with due date)
-   const [date, setDate] = useState<DateRange | undefined>(() => {
-     if (!initialQuote) return undefined;
- 
-     try {
-       return {
-         from: initialQuote.date ? new Date(initialQuote.date) : undefined,
-       };
-     } catch (e) {
-       console.error("Error parsing dates:", e);
-       return undefined;
-     }
-   });
+  const [date, setDate] = useState<DateRange | undefined>(() => {
+      if (!initialQuote || (!initialQuote.date)) {
+        return undefined;
+      }
+      
+      return {
+        from: initialQuote.date ? adjustDateForTimezone(initialQuote.date) : undefined,      };
+    });
+    
+    function adjustDateForTimezone(dateString: string) {
+      const parts = dateString.split('-');
+      if (parts.length !== 3) return new Date(); // Fallback
+      
+      return new Date(
+        parseInt(parts[0]), 
+        parseInt(parts[1]) - 1, 
+        parseInt(parts[2])
+      );
+    }
   
   const [description, setDescription] = useState(initialQuote?.description || '');
   const [comments, setComments] = useState(initialQuote?.private_comments || '');
@@ -132,6 +138,16 @@ export default function CreateQuoteForm({
     const validServices = services.filter(s => 
       s.servicename && s.service_id && s.quantity > 0
     );
+    const formatDateForSubmission = (date: Date | undefined) => {
+      if (!date) return undefined;
+      
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      
+      return `${year}-${month}-${day}`;
+    };
+
 
     if (validServices.length === 0) {
       setError('At least one valid service must be selected');
@@ -146,7 +162,7 @@ export default function CreateQuoteForm({
         description,
         comments,
         vin,
-        startDate: date?.from ? date.from.toISOString().split('T')[0] : undefined,
+        startDate: date?.from ? formatDateForSubmission(date.from) : undefined,
         services: validServices,
       };
 
