@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react';
+import { DateRange } from 'react-day-picker';
 import Link from 'next/link';
+import { DatePicker } from '@/components/datepicker';
 import useSWR from 'swr';
 import {
   Table,
@@ -58,7 +60,9 @@ export default function QuoteList() {
     customerName: '',
     poNumber: '',
     vin: '',
-    status: 'all'
+    status: 'all',
+    dateRange: undefined as DateRange | undefined
+
   });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [quoteToDelete, setQuoteToDelete] = useState<string | null>(null);
@@ -78,7 +82,7 @@ export default function QuoteList() {
   useEffect(() => {
     if (refreshParam) {
       mutate();
-      
+
       const params = new URLSearchParams(window.location.search);
       params.delete('refresh');
       const newUrl = window.location.pathname + (params.toString() ? `?${params.toString()}` : '');
@@ -108,8 +112,8 @@ export default function QuoteList() {
     const sorted = [...filtered].sort((a, b) => {
       const idA = typeof a.quote_id === 'string' ? parseInt(a.quote_id) : a.quote_id;
       const idB = typeof b.quote_id === 'string' ? parseInt(b.quote_id) : b.quote_id;
-      
-      return idB - idA; 
+
+      return idB - idA;
     });
 
     setFilteredQuotes(sorted);
@@ -139,17 +143,17 @@ export default function QuoteList() {
       const response = await fetch(`/api/data/quotes/${quoteId}/pdf`, {
         method: 'GET',
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to generate PDF for printing');
       }
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const printWindow = window.open(url);
-      
+
       if (printWindow) {
-        printWindow.onload = function() {
+        printWindow.onload = function () {
           printWindow.print();
         };
       }
@@ -163,11 +167,11 @@ export default function QuoteList() {
       const response = await fetch(`/api/data/quotes/${quoteId}/pdf`, {
         method: 'GET',
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to generate PDF');
       }
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -175,7 +179,7 @@ export default function QuoteList() {
       a.download = `quote-${quoteId}.pdf`;
       document.body.appendChild(a);
       a.click();
-      
+
       window.URL.revokeObjectURL(url);
       a.remove();
     } catch (err) {
@@ -190,17 +194,17 @@ export default function QuoteList() {
 
   const handleDeleteQuote = async () => {
     if (!quoteToDelete) return;
-    
+
     setIsDeleting(true);
     try {
       const response = await fetch(`/api/data/quotes/${quoteToDelete}`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to delete quote');
       }
-      
+
       setDeleteDialogOpen(false);
       mutate();
     } catch (err) {
@@ -221,7 +225,7 @@ export default function QuoteList() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <Input
           placeholder="Search Quote #"
           value={filters.quoteNumber}
@@ -271,6 +275,10 @@ export default function QuoteList() {
             <SelectItem value="rejected">Rejected</SelectItem>
           </SelectContent>
         </Select>
+        <DatePicker
+          date={filters.dateRange}
+          setDate={(range) => setFilters(prev => ({ ...prev, dateRange: range }))}
+        />
       </div>
 
       {filteredQuotes.length === 0 ? (
@@ -305,7 +313,15 @@ export default function QuoteList() {
                   </TableCell>
                   <TableCell>{quote.customer_name}</TableCell>
                   <TableCell>
-                    {quote.date ? new Date(quote.date).toLocaleDateString() : 'N/A'}
+                    {quote.date
+                      ? new Date(quote.date)
+                        .toLocaleDateString(undefined, {
+                          year: 'numeric',
+                          month: 'numeric',
+                          day: 'numeric',
+                          timeZone: 'UTC' 
+                        })
+                      : 'N/A'}
                   </TableCell>
                   <TableCell>{quote.po_number || 'N/A'}</TableCell>
                   <TableCell>{quote.vin || 'N/A'}</TableCell>
