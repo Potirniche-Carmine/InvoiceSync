@@ -35,27 +35,12 @@ export default function CreateInvoiceForm({
     } : null
   );
   const [PO, setPO] = useState(initialInvoice?.po_number || '');
-  const [date, setDate] = useState<DateRange | undefined>(() => {
-    if (!initialInvoice || (!initialInvoice.date && !initialInvoice.duedate)) {
-      return undefined;
-    }
-    
-    return {
-      from: initialInvoice.date ? adjustDateForTimezone(initialInvoice.date) : undefined,
-      to: initialInvoice.duedate ? adjustDateForTimezone(initialInvoice.duedate) : undefined
-    };
-  });
-  
-  function adjustDateForTimezone(dateString: string) {
-    const parts = dateString.split('-');
-    if (parts.length !== 3) return new Date(); // Fallback
-    
-    return new Date(
-      parseInt(parts[0]), 
-      parseInt(parts[1]) - 1, 
-      parseInt(parts[2])
-    );
-  }
+  const [date, setDate] = useState<DateRange | undefined>(
+    initialInvoice ? {
+      from: initialInvoice.date ? new Date(initialInvoice.date) : undefined,
+      to: initialInvoice.duedate ? new Date(initialInvoice.duedate) : undefined
+    } : undefined
+  );
   const [description, setDescription] = useState(initialInvoice?.description || '');
   const [comments, setComments] = useState(initialInvoice?.private_comments || '');
   const [vin, setVIN] = useState(initialInvoice?.vin || '');
@@ -65,8 +50,8 @@ export default function CreateInvoiceForm({
       istaxed: Boolean(service.istaxed)
     })) || []
   );
-
-
+  
+  
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -187,16 +172,6 @@ export default function CreateInvoiceForm({
       s.servicename && s.service_id && s.quantity > 0
     );
 
-    const formatDateForSubmission = (date: Date | undefined) => {
-      if (!date) return undefined;
-      
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      
-      return `${year}-${month}-${day}`;
-    };
-
     if (validServices.length === 0) {
       setError('At least one valid service must be selected');
       setIsSubmitting(false);
@@ -210,8 +185,8 @@ export default function CreateInvoiceForm({
         description,
         comments,
         vin,
-        startDate: date?.from ? formatDateForSubmission(date.from) : undefined,
-        dueDate: date?.to ? formatDateForSubmission(date.to) : undefined,
+        startDate: date?.from?.toISOString(),
+        dueDate: date?.to?.toISOString(),
         services: validServices,
       };
 
@@ -264,12 +239,12 @@ export default function CreateInvoiceForm({
   const calculateTotals = () => {
     return services.reduce((acc, service) => {
       if (!service.servicename) return acc;
-
+      
       const quantity = service.quantity || 1;
       const unitPrice = service.unitprice || 0;
       const amount = parseFloat((quantity * unitPrice).toFixed(2));
       const tax = service.istaxed ? parseFloat((amount * TAX_RATE).toFixed(2)) : 0;
-
+  
       return {
         subtotal: parseFloat((acc.subtotal + amount).toFixed(2)),
         taxTotal: parseFloat((acc.taxTotal + tax).toFixed(2)),
@@ -331,12 +306,12 @@ export default function CreateInvoiceForm({
                   placeholder="e.g. 1HGCM82633A123456"
                   maxLength={17}
                 />
-                <VinDecoder
-                  ref={vinDecoderRef}
-                  vin={vin}
-                  onVehicleInfoAdded={handleVehicleInfoAdded}
-                  disabled={isSubmitting}
-                />
+                  <VinDecoder
+                    ref={vinDecoderRef}
+                    vin={vin}
+                    onVehicleInfoAdded={handleVehicleInfoAdded}
+                    disabled={isSubmitting}
+                  />
               </div>
             </div>
 
