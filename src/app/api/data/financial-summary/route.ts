@@ -40,19 +40,8 @@ export async function GET(request: NextRequest) {
       WHERE status IN ('pending', 'overdue') ${dateFilter}
     `;
     
-    // New query to calculate parts total
-    const partsQuery = `
-      SELECT 
-        SUM(id.totalprice) as parts_total
-      FROM invoices i
-      JOIN invoicedetail id ON i.invoice_id = id.invoice_id
-      JOIN services s ON id.service_id = s.service_id
-      WHERE s.isparts = true ${dateFilter}
-    `;
-    
     const totalsResult = await client.query(totalsQuery, params);
     const unpaidResult = await client.query(unpaidQuery, params);
-    const partsResult = await client.query(partsQuery, params);
     
     return NextResponse.json({
       summary: {
@@ -60,8 +49,7 @@ export async function GET(request: NextRequest) {
         totalAmount: totalsResult.rows[0].total_amount || 0,
         invoiceCount: totalsResult.rows[0].invoice_count || 0,
         unpaidTotal: unpaidResult.rows[0].unpaid_total || 0,
-        unpaidCount: unpaidResult.rows[0].unpaid_count || 0,
-        partsTotal: partsResult.rows[0].parts_total || 0 // Add parts total to the summary
+        unpaidCount: unpaidResult.rows[0].unpaid_count || 0
       }
     });
     

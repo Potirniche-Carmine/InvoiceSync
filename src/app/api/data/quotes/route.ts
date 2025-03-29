@@ -9,7 +9,7 @@ export async function GET() {
       SELECT 
         q.quote_id,
         c.customer_name,
-        TO_CHAR(i.date, 'YYYY-MM-DD"T"HH24:MI:SS') as date,
+        TO_CHAR(q.date, 'YYYY-MM-DD"T"HH24:MI:SS') as date,
         q.totalamount,
         q.vin,
         q.po_number,
