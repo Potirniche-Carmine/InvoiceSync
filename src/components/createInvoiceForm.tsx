@@ -14,7 +14,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import VinDecoder from '@/components/vinDecoder';
 import { TAX_RATE, TAX_RATE_DISPLAY } from "@/lib/constants";
 import { useSearchParams } from 'next/navigation';
-import { parseISO, format } from 'date-fns';
 interface CreateInvoiceFormProps {
   mode?: 'create' | 'edit';
   initialInvoice?: DetailedInvoice;
@@ -36,12 +35,19 @@ export default function CreateInvoiceForm({
     } : null
   );
   const [PO, setPO] = useState(initialInvoice?.po_number || '');
-  const [date, setDate] = useState<DateRange | undefined>(
-    initialInvoice ? {
-      from: initialInvoice.date ? parseISO(initialInvoice.date + 'T00:00:00Z') : undefined,
-      to: initialInvoice.duedate ? parseISO(initialInvoice.duedate + 'T00:00:00Z') : undefined
-    } : undefined
-  );
+  const [date, setDate] = useState<DateRange | undefined>(() => {
+    if (!initialInvoice) return undefined;
+
+    try {
+      return {
+        from: initialInvoice.date ? new Date(initialInvoice.date) : undefined,
+        to: initialInvoice.duedate ? new Date(initialInvoice.duedate) : undefined
+      };
+    } catch (e) {
+      console.error("Error parsing dates:", e);
+      return undefined;
+    }
+  });
   const [description, setDescription] = useState(initialInvoice?.description || '');
   const [comments, setComments] = useState(initialInvoice?.private_comments || '');
   const [vin, setVIN] = useState(initialInvoice?.vin || '');
@@ -51,8 +57,8 @@ export default function CreateInvoiceForm({
       istaxed: Boolean(service.istaxed)
     })) || []
   );
-  
-  
+
+
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -186,8 +192,8 @@ export default function CreateInvoiceForm({
         description,
         comments,
         vin,
-        startDate: date?.from ? format(date.from, 'yyyy-MM-dd') : undefined,
-        dueDate: date?.to ? format(date.to, 'yyyy-MM-dd') : undefined,
+        startDate: date?.from ? date.from.toISOString().split('T')[0] : undefined,
+        dueDate: date?.to ? date.to.toISOString().split('T')[0] : undefined,
         services: validServices,
       };
 
@@ -240,12 +246,12 @@ export default function CreateInvoiceForm({
   const calculateTotals = () => {
     return services.reduce((acc, service) => {
       if (!service.servicename) return acc;
-      
+
       const quantity = service.quantity || 1;
       const unitPrice = service.unitprice || 0;
       const amount = parseFloat((quantity * unitPrice).toFixed(2));
       const tax = service.istaxed ? parseFloat((amount * TAX_RATE).toFixed(2)) : 0;
-  
+
       return {
         subtotal: parseFloat((acc.subtotal + amount).toFixed(2)),
         taxTotal: parseFloat((acc.taxTotal + tax).toFixed(2)),
@@ -307,12 +313,12 @@ export default function CreateInvoiceForm({
                   placeholder="e.g. 1HGCM82633A123456"
                   maxLength={17}
                 />
-                  <VinDecoder
-                    ref={vinDecoderRef}
-                    vin={vin}
-                    onVehicleInfoAdded={handleVehicleInfoAdded}
-                    disabled={isSubmitting}
-                  />
+                <VinDecoder
+                  ref={vinDecoderRef}
+                  vin={vin}
+                  onVehicleInfoAdded={handleVehicleInfoAdded}
+                  disabled={isSubmitting}
+                />
               </div>
             </div>
 

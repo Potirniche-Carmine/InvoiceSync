@@ -13,7 +13,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import VinDecoder from '@/components/vinDecoder';
 import { TAX_RATE, TAX_RATE_DISPLAY } from "@/lib/constants";
-import { parseISO, format } from 'date-fns';
 
 interface CreateQuoteFormProps {
   mode?: 'create' | 'edit';
@@ -35,11 +34,18 @@ export default function CreateQuoteForm({
   const [PO, setPO] = useState(initialQuote?.po_number || '');
   
   // For quotes, we only need a single date (not a range with due date)
-  const [date, setDate] = useState<DateRange | undefined>(
-    initialQuote ? {
-      from: initialQuote.date ? parseISO(initialQuote.date + 'T00:00:00Z') : undefined,
-    } : undefined
-  );
+   const [date, setDate] = useState<DateRange | undefined>(() => {
+     if (!initialQuote) return undefined;
+ 
+     try {
+       return {
+         from: initialQuote.date ? new Date(initialQuote.date) : undefined,
+       };
+     } catch (e) {
+       console.error("Error parsing dates:", e);
+       return undefined;
+     }
+   });
   
   const [description, setDescription] = useState(initialQuote?.description || '');
   const [comments, setComments] = useState(initialQuote?.private_comments || '');
@@ -140,7 +146,7 @@ export default function CreateQuoteForm({
         description,
         comments,
         vin,
-        startDate: date?.from ? format(date.from, 'yyyy-MM-dd') : undefined,
+        startDate: date?.from ? date.from.toISOString().split('T')[0] : undefined,
         services: validServices,
       };
 

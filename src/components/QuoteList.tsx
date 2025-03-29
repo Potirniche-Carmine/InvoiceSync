@@ -320,7 +320,7 @@ export default function QuoteList() {
                 <TableRow key={quote.quote_id}>
                   <TableCell className="font-medium p-0">
                     <Link
-                      href={`/admin/dashboard/quotes/${quote.quote_id}`}
+                      href={`/dashboard/quotes/${quote.quote_id}`}
                       className="block w-full text-left px-6 py-4 hover:text-blue-600 hover:bg-blue-50 transition-colors"
                     >
                       {quote.quote_id}
