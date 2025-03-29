@@ -13,6 +13,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import VinDecoder from '@/components/vinDecoder';
 import { TAX_RATE, TAX_RATE_DISPLAY } from "@/lib/constants";
+import { parseISO, format } from 'date-fns';
 
 interface CreateQuoteFormProps {
   mode?: 'create' | 'edit';
@@ -36,8 +37,7 @@ export default function CreateQuoteForm({
   // For quotes, we only need a single date (not a range with due date)
   const [date, setDate] = useState<DateRange | undefined>(
     initialQuote ? {
-      from: initialQuote.date ? new Date(initialQuote.date) : undefined,
-      to: undefined
+      from: initialQuote.date ? parseISO(initialQuote.date + 'T00:00:00Z') : undefined,
     } : undefined
   );
   
@@ -140,7 +140,7 @@ export default function CreateQuoteForm({
         description,
         comments,
         vin,
-        startDate: date?.from?.toISOString(),
+        startDate: date?.from ? format(date.from, 'yyyy-MM-dd') : undefined,
         services: validServices,
       };
 

@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import VinDecoder from '@/components/vinDecoder';
 import { TAX_RATE, TAX_RATE_DISPLAY } from "@/lib/constants";
 import { useSearchParams } from 'next/navigation';
+import { parseISO, format } from 'date-fns';
 interface CreateInvoiceFormProps {
   mode?: 'create' | 'edit';
   initialInvoice?: DetailedInvoice;
@@ -37,8 +38,8 @@ export default function CreateInvoiceForm({
   const [PO, setPO] = useState(initialInvoice?.po_number || '');
   const [date, setDate] = useState<DateRange | undefined>(
     initialInvoice ? {
-      from: initialInvoice.date ? new Date(initialInvoice.date) : undefined,
-      to: initialInvoice.duedate ? new Date(initialInvoice.duedate) : undefined
+      from: initialInvoice.date ? parseISO(initialInvoice.date + 'T00:00:00Z') : undefined,
+      to: initialInvoice.duedate ? parseISO(initialInvoice.duedate + 'T00:00:00Z') : undefined
     } : undefined
   );
   const [description, setDescription] = useState(initialInvoice?.description || '');
@@ -185,8 +186,8 @@ export default function CreateInvoiceForm({
         description,
         comments,
         vin,
-        startDate: date?.from?.toISOString(),
-        dueDate: date?.to?.toISOString(),
+        startDate: date?.from ? format(date.from, 'yyyy-MM-dd') : undefined,
+        dueDate: date?.to ? format(date.to, 'yyyy-MM-dd') : undefined,
         services: validServices,
       };
 
