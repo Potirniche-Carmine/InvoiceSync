@@ -92,7 +92,7 @@ export default function QuoteList() {
 
   useEffect(() => {
     if (!data?.quotes) return;
-
+  
     const filtered = data.quotes.filter((quote: Quote) => {
       const matchesQuoteNumber = String(quote.quote_id)
         .toLowerCase()
@@ -104,18 +104,33 @@ export default function QuoteList() {
       const matchesVIN = (quote.vin || '').toLowerCase()
         .includes(filters.vin.toLowerCase());
       const matchesStatus = filters.status === 'all' || quote.status === filters.status;
-
+  
+      let matchesDateRange = true;
+      if (filters.dateRange && filters.dateRange.from) {
+        const quoteDate = new Date(quote.date);
+        const fromDate = new Date(filters.dateRange.from);
+        fromDate.setHours(0, 0, 0, 0);
+  
+        if (filters.dateRange.to) {
+          const toDate = new Date(filters.dateRange.to);
+          toDate.setHours(23, 59, 59, 999);
+          matchesDateRange = quoteDate >= fromDate && quoteDate <= toDate;
+        } else {
+          matchesDateRange = quoteDate.toDateString() === fromDate.toDateString();
+        }
+      }
+  
       return matchesQuoteNumber && matchesCustomer && matchesPO &&
-        matchesVIN && matchesStatus;
+        matchesVIN && matchesStatus && matchesDateRange;
     });
-
+  
     const sorted = [...filtered].sort((a, b) => {
       const idA = typeof a.quote_id === 'string' ? parseInt(a.quote_id) : a.quote_id;
       const idB = typeof b.quote_id === 'string' ? parseInt(b.quote_id) : b.quote_id;
-
+  
       return idB - idA;
     });
-
+  
     setFilteredQuotes(sorted);
   }, [filters, data]);
 
