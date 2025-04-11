@@ -369,13 +369,13 @@ export default function CreateInvoiceForm({
 
             <div className="space-y-6">
               {services.map((service, index) => (
-                <div key={index} className="border rounded-md p-4 relative">
-                  <ServiceSelect
-                    initialService={service.servicename ? service : undefined}
-                    onSelect={(updatedService) => handleServiceSelect(index, updatedService)}
-                    onRemove={() => removeServiceSelection(index)}
-                    showRemoveButton={services.length > 1}
-                  />
+  <div key={index} className="border rounded-md p-4 relative">
+    <ServiceSelect
+      initialService={service.servicename ? service : undefined}
+      onSelect={(updatedService) => handleServiceSelect(index, updatedService)}
+      onRemove={() => removeServiceSelection(index)}
+      showRemoveButton={services.length > 1}
+    />
                 </div>
               ))}
             </div>

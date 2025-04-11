@@ -81,6 +81,7 @@ export default function ServiceSelect({
   const handleSelect = (service: Service) => {
     const invoiceService: InvoiceService = {
       ...service,
+      service_id: typeof service.service_id === 'string' ? parseInt(service.service_id) : service.service_id,
       quantity: 1,
       totalprice: service.istaxed ?
         service.unitprice * (1 + TAX_RATE) :
@@ -295,14 +296,12 @@ export default function ServiceSelect({
                 </div>
               </div>
             ))}
-            {filteredServices.length === 0 && (
               <div
                 className="p-2 hover:bg-gray-100 cursor-pointer text-black"
                 onClick={handleCreateNewService}
               >
                 Create new service: &quot;{search}&quot;
               </div>
-            )}
           </div>
         )}
       </div>
