@@ -62,8 +62,8 @@ export async function PUT(request: Request) {
             SET 
                 description = $1, 
                 unitprice = $2, 
-                istaxed = COALESCE($3, false),
-            WHERE service_id = $5
+                istaxed = COALESCE($3, false)
+            WHERE service_id = $4
             RETURNING *
         `;
         const values = [
