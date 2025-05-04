@@ -107,8 +107,7 @@ export default function ServiceSelect({
           servicename: search,
           description: '',
           unitprice: 0,
-          istaxed: false,
-          isparts: false, // Add the isparts field with default false
+          istaxed: false
         }),
       });
 
@@ -120,7 +119,6 @@ export default function ServiceSelect({
       const formattedService: InvoiceService = {
         ...newService,
         istaxed: Boolean(newService.istaxed),
-        isparts: Boolean(newService.isparts), // Ensure isparts is a boolean
         quantity: 1,
         totalprice: newService.unitprice || 0
       };
@@ -145,8 +143,7 @@ export default function ServiceSelect({
       if (
         serviceToUpdate.description !== selectedService.description ||
         serviceToUpdate.unitprice !== selectedService.unitprice ||
-        serviceToUpdate.istaxed !== selectedService.istaxed ||
-        serviceToUpdate.isparts !== selectedService.isparts // Add isparts to the comparison
+        serviceToUpdate.istaxed !== selectedService.istaxed
       ) {
         const response = await fetch('/api/data/services', {
           method: 'PUT',
@@ -158,7 +155,6 @@ export default function ServiceSelect({
             description: serviceToUpdate.description,
             unitprice: serviceToUpdate.unitprice,
             istaxed: Boolean(serviceToUpdate.istaxed),
-            isparts: Boolean(serviceToUpdate.isparts) // Add isparts to the update
           }),
         });
 
@@ -168,8 +164,7 @@ export default function ServiceSelect({
             service.service_id === selectedService.service_id
               ? { 
                   ...updatedService, 
-                  istaxed: Boolean(updatedService.istaxed),
-                  isparts: Boolean(updatedService.isparts) // Ensure isparts is a boolean
+                  istaxed: Boolean(updatedService.istaxed)
                 }
               : service
           ));
@@ -238,23 +233,6 @@ export default function ServiceSelect({
       totalprice: calculateTotalPrice({
         ...editedService,
         istaxed: checked
-      })
-    };
-
-    setEditedService(updatedService);
-    onSelect(updatedService);
-    handleUpdateService(updatedService);
-  };
-
-  const handlePartsChange = (checked: boolean) => {
-    if (!editedService) return;
-
-    const updatedService = {
-      ...editedService,
-      isparts: checked,
-      totalprice: calculateTotalPrice({
-        ...editedService,
-        isparts: checked
       })
     };
 
@@ -391,15 +369,6 @@ export default function ServiceSelect({
                 id="Tax"
                 checked={Boolean(editedService?.istaxed)}
                 onCheckedChange={handleTaxChange}
-              />
-            </div>
-
-            <div className="flex justify-between items-center p-2 mt-2 bg-gray-50 rounded">
-              <Label>Is this parts?</Label>
-              <Switch
-                id="Parts"
-                checked={Boolean(editedService?.isparts)}
-                onCheckedChange={handlePartsChange}
               />
             </div>
 

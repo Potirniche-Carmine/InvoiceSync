@@ -10,9 +10,9 @@ export function Header(){
         <Link href="/dashboard" className="flex items-center">
           <Image
             src="/logo.png"
-            alt="Locksmith4U Logo"
+            alt="Your Logo here"
             width={150}
-            height={50}
+            height={25}
             priority
             style = {{height: 'auto', width: 'auto'}}
             className="mr-3"

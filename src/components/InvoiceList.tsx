@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import useSWR from 'swr';
+import { DatePicker } from '@/components/datepicker';
+import { DateRange } from 'react-day-picker';
 import {
   Table,
   TableBody,
@@ -51,7 +53,8 @@ export default function InvoiceList() {
     customerName: '',
     poNumber: '',
     vin: '',
-    status: 'all'
+    status: 'all',
+    dateRange: undefined as DateRange | undefined
   });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [invoiceToDelete, setInvoiceToDelete] = useState<string | null>(null);
@@ -70,7 +73,7 @@ export default function InvoiceList() {
   useEffect(() => {
     if (refreshParam) {
       mutate();
-      
+
       const params = new URLSearchParams(window.location.search);
       params.delete('refresh');
       const newUrl = window.location.pathname + (params.toString() ? `?${params.toString()}` : '');
@@ -93,15 +96,30 @@ export default function InvoiceList() {
         .includes(filters.vin.toLowerCase());
       const matchesStatus = filters.status === 'all' || invoice.status === filters.status;
 
+      let matchesDateRange = true;
+      if (filters.dateRange && filters.dateRange.from) {
+        const invoiceDate = new Date(invoice.date);
+        const fromDate = new Date(filters.dateRange.from);
+        fromDate.setHours(0, 0, 0, 0);
+
+        if (filters.dateRange.to) {
+          const toDate = new Date(filters.dateRange.to);
+          toDate.setHours(23, 59, 59, 999);
+          matchesDateRange = invoiceDate >= fromDate && invoiceDate <= toDate;
+        } else {
+          matchesDateRange = invoiceDate.toDateString() === fromDate.toDateString();
+        }
+      }
+
       return matchesInvoiceNumber && matchesCustomer && matchesPO &&
-        matchesVIN && matchesStatus;
+        matchesVIN && matchesStatus && matchesDateRange;
     });
 
     const sorted = [...filtered].sort((a, b) => {
       const idA = typeof a.invoice_id === 'string' ? parseInt(a.invoice_id) : a.invoice_id;
       const idB = typeof b.invoice_id === 'string' ? parseInt(b.invoice_id) : b.invoice_id;
-      
-      return idB - idA; 
+
+      return idB - idA;
     });
 
     setFilteredInvoices(sorted);
@@ -123,7 +141,7 @@ export default function InvoiceList() {
 
   const handlePaymentMethod = async (invoiceId: string, method: string) => {
     try {
-      
+
       const response = await fetch(`/api/data/invoices/${invoiceId}/payment`, {
         method: 'POST',
         headers: {
@@ -131,14 +149,14 @@ export default function InvoiceList() {
         },
         body: JSON.stringify({ paymentMethod: method }),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `Failed to process payment with ${method}`);
       }
-      
+
       await mutate();
-      
+
     } catch (error) {
       console.error(`Error processing payment for invoice ${invoiceId}:`, error);
     }
@@ -148,17 +166,17 @@ export default function InvoiceList() {
       const response = await fetch(`/api/data/invoices/${invoiceId}/pdf`, {
         method: 'GET',
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to generate PDF for printing');
       }
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const printWindow = window.open(url);
-      
+
       if (printWindow) {
-        printWindow.onload = function() {
+        printWindow.onload = function () {
           printWindow.print();
         };
       }
@@ -172,11 +190,11 @@ export default function InvoiceList() {
       const response = await fetch(`/api/data/invoices/${invoiceId}/pdf`, {
         method: 'GET',
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to generate PDF');
       }
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -184,7 +202,7 @@ export default function InvoiceList() {
       a.download = `invoice-${invoiceId}.pdf`;
       document.body.appendChild(a);
       a.click();
-      
+
       window.URL.revokeObjectURL(url);
       a.remove();
     } catch (err) {
@@ -199,17 +217,17 @@ export default function InvoiceList() {
 
   const handleDeleteInvoice = async () => {
     if (!invoiceToDelete) return;
-    
+
     setIsDeleting(true);
     try {
       const response = await fetch(`/api/data/invoices/${invoiceToDelete}`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to delete invoice');
       }
-      
+
       setDeleteDialogOpen(false);
       mutate();
     } catch (err) {
@@ -230,38 +248,42 @@ export default function InvoiceList() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <Input
-          placeholder="Search Invoice #"
+          placeholder="Invoice #"
           value={filters.invoiceNumber}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters(prev => ({
             ...prev,
             invoiceNumber: e.target.value
           }))}
+          className="text-sm h-9"
         />
         <Input
-          placeholder="Search Customer"
+          placeholder="Customer"
           value={filters.customerName}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters(prev => ({
             ...prev,
             customerName: e.target.value
           }))}
+          className="text-sm h-9"
         />
         <Input
-          placeholder="Search PO #"
+          placeholder="PO #"
           value={filters.poNumber}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters(prev => ({
             ...prev,
             poNumber: e.target.value
           }))}
+          className="text-sm h-9"
         />
         <Input
-          placeholder="Search VIN"
+          placeholder="VIN"
           value={filters.vin}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilters(prev => ({
             ...prev,
             vin: e.target.value
           }))}
+          className="text-sm h-9"
         />
         <Select
           value={filters.status}
@@ -270,8 +292,8 @@ export default function InvoiceList() {
             status: value
           }))}
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Filter by status" />
+          <SelectTrigger className="text-sm h-9">
+            <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
@@ -280,6 +302,10 @@ export default function InvoiceList() {
             <SelectItem value="overdue">Overdue</SelectItem>
           </SelectContent>
         </Select>
+        <DatePicker
+          date={filters.dateRange}
+          setDate={(range) => setFilters(prev => ({ ...prev, dateRange: range }))}
+        />
       </div>
 
       {filteredInvoices.length === 0 ? (
@@ -315,11 +341,25 @@ export default function InvoiceList() {
                   </TableCell>
                   <TableCell>{invoice.customer_name}</TableCell>
                   <TableCell>
-                    {invoice.date ? new Date(invoice.date).toLocaleDateString() : 'N/A'}
+                    {invoice.date
+                      ? new Date(invoice.date)
+                        .toLocaleDateString(undefined, {
+                          year: 'numeric',
+                          month: 'numeric',
+                          day: 'numeric',
+                          timeZone: 'UTC' 
+                        })
+                      : 'N/A'}
                   </TableCell>
                   <TableCell>
                     {invoice.duedate
-                      ? new Date(invoice.duedate).toLocaleDateString()
+                      ? new Date(invoice.duedate)
+                        .toLocaleDateString(undefined, {
+                          year: 'numeric',
+                          month: 'numeric',
+                          day: 'numeric',
+                          timeZone: 'UTC' 
+                        })
                       : 'N/A'}
                   </TableCell>
                   <TableCell>{invoice.po_number || 'N/A'}</TableCell>

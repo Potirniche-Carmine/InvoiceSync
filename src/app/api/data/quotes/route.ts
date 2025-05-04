@@ -9,7 +9,7 @@ export async function GET() {
       SELECT 
         q.quote_id,
         c.customer_name,
-        q.date,
+        TO_CHAR(q.date, 'YYYY-MM-DD"T"HH24:MI:SS') as date,
         q.totalamount,
         q.vin,
         q.po_number,
@@ -57,21 +57,20 @@ export async function POST(request: Request) {
       services,
     } = await request.json();
 
-    // Calculate totals
-    const subtotal = services.reduce((acc: number, service: Service) => {
+    const subtotal = parseFloat(services.reduce((acc: number, service: Service) => {
       const quantity = service.quantity || 1;
       const unitPrice = Number(service.unitprice) || 0;
       return acc + (quantity * unitPrice);
-    }, 0);
-  
-    const tax_total = services.reduce((acc: number, service: Service) => {
+    }, 0).toFixed(2));
+    
+    const tax_total = parseFloat(services.reduce((acc: number, service: Service) => {
       if (!service.istaxed) return acc;
       const quantity = service.quantity || 1;
       const unitPrice = Number(service.unitprice) || 0;
       return acc + (quantity * unitPrice * TAX_RATE);
-    }, 0);
+    }, 0).toFixed(2));
     
-    const total_amount = subtotal + tax_total;
+    const total_amount = parseFloat((subtotal + tax_total).toFixed(2));
 
     const quoteQuery = {
       text: `

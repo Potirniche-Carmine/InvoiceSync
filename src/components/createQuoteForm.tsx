@@ -48,8 +48,7 @@ export default function CreateQuoteForm({
     initialQuote?.services 
       ? initialQuote.services.map(service => ({
           ...service,
-          service_id: Number(service.service_id), // Ensure service_id is a number
-          ispart: service.isparts || false // Convert isparts to ispart property
+          service_id: Number(service.service_id)
         }))
       : []
   );
@@ -83,8 +82,7 @@ export default function CreateQuoteForm({
       unitprice: 0,
       istaxed: false,
       quantity: 1,
-      totalprice: 0,
-      isparts: false,
+      totalprice: 0
     }]);
   };
 
@@ -194,17 +192,17 @@ export default function CreateQuoteForm({
 
   const calculateTotals = () => {
     return services.reduce((acc, service) => {
-      if (!service.servicename) return acc; // Skip empty services
+      if (!service.servicename) return acc;
       
       const quantity = service.quantity || 1;
       const unitPrice = service.unitprice || 0;
-      const amount = quantity * unitPrice;
-      const tax = service.istaxed ? amount * TAX_RATE : 0;
+      const amount = parseFloat((quantity * unitPrice).toFixed(2));
+      const tax = service.istaxed ? parseFloat((amount * TAX_RATE).toFixed(2)) : 0;
   
       return {
-        subtotal: acc.subtotal + amount,
-        taxTotal: acc.taxTotal + tax,
-        total: acc.total + amount + tax
+        subtotal: parseFloat((acc.subtotal + amount).toFixed(2)),
+        taxTotal: parseFloat((acc.taxTotal + tax).toFixed(2)),
+        total: parseFloat((acc.total + amount + tax).toFixed(2))
       };
     }, {
       subtotal: 0,

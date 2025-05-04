@@ -36,7 +36,7 @@ export const authOptions: AuthOptions = {
 
           return {
             id: "1",
-            name: "Iulian"
+            name: "Admin",
           };
         } catch (error) {
           if (error instanceof Error && !error.message.includes("Invalid username/password")) {

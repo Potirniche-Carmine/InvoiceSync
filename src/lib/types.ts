@@ -25,18 +25,11 @@ export interface Service {
   description: string;
   unitprice: number;
   istaxed: boolean;
-  isparts: boolean;
   quantity?: number; 
 }
 
-export interface InvoiceService {
-  service_id: number;
-  servicename: string;
-  description: string;
-  unitprice: number;
-  istaxed: boolean;
-  isparts: boolean;
-  quantity: number;
+export interface InvoiceService extends Service {
+  quantity: number; 
   totalprice: number;
 }
 
